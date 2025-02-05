@@ -11,6 +11,8 @@ import 'package:onyx_upload/features/upload_screen/presentation/controller/uploa
 class FileUploadCubit extends Cubit<FileUploadState> {
   FileUploadCubit() : super(const FileUploadState());
 
+  late final OnixGridStateManager stateManager;
+
   // Method to pick a file and process it
   Future<void> pickFile() async {
     emit(state.copyWith(isLoading: true)); // Start loading
@@ -28,7 +30,8 @@ class FileUploadCubit extends Cubit<FileUploadState> {
         _processExcelFile(result.files.single.bytes!);
       }
     } else {
-      emit(state.copyWith(errorMessage: 'No file selected', isLoading: false)); // Handle error
+      emit(state.copyWith(
+          errorMessage: 'No file selected', isLoading: false)); // Handle error
     }
   }
 
@@ -39,7 +42,9 @@ class FileUploadCubit extends Cubit<FileUploadState> {
 
     emit(state.copyWith(
       tableData: fields.skip(1).toList(),
-      headers: fields.isNotEmpty ? fields.first.map((e) => e.toString()).toList() : [],
+      headers: fields.isNotEmpty
+          ? fields.first.map((e) => e.toString()).toList()
+          : [],
       isLoading: false,
     ));
   }
@@ -59,44 +64,41 @@ class FileUploadCubit extends Cubit<FileUploadState> {
 
     emit(state.copyWith(
       tableData: rows.length > 1 ? rows.sublist(1) : [],
-      headers: rows.isNotEmpty ? rows.first.map((e) => e.toString()).toList() : [],
+      headers:
+          rows.isNotEmpty ? rows.first.map((e) => e.toString()).toList() : [],
       isLoading: false,
     ));
   }
 
-
   final mappingHeaders = [
-      OnixGridHeaderCell(
-        headerCellField: 'fileColumn',
-        title: 'File Column', cellType: const OnixTextCell(readOnly: false),
-        // Using a simple text cell; you can customize cellType if needed.
+    OnixGridHeaderCell(
+      headerCellField: 'fileColumn',
+      title: 'File Column', cellType: const OnixTextCell(readOnly: false),
+      // Using a simple text cell; you can customize cellType if needed.
+    ),
+    OnixGridHeaderCell(
+      headerCellField: 'dbColumn',
+      title: 'Database Column',
+      cellType: OnixDropdownCell(
+        readOnly: false,
+        isRequired: true,
+        onChanged: (index, item) {},
+        pgNo: 1,
+        pgSz: 3,
+        fetchItems: (_, __) async {
+          await Future.delayed(const Duration(seconds: 2));
+          return const [
+            OnixGridItem(title: 'Item 1 ', value: "1"),
+            OnixGridItem(title: 'Item 2', value: "2"),
+            OnixGridItem(title: 'Item 3', value: "3")
+          ];
+        },
       ),
-      OnixGridHeaderCell(
-        headerCellField: 'dbColumn',
-        title: 'Database Column',
-        cellType: OnixDropdownCell(
-          readOnly: false,
-          isRequired: true,
-          onChanged: (index, item) {},
-          pgNo: 1,
-          pgSz: 3,
-          fetchItems: (_, __) async {
-            await Future.delayed(const Duration(seconds: 2));
-            return const [
-              OnixGridItem(title: 'Item 1 ', value: "1"),
-              OnixGridItem(title: 'Item 2', value: "2"),
-              OnixGridItem(title: 'Item 3', value: "3")
-            ];
-          },
-        ),
-      ),
-      OnixGridHeaderCell(
-        headerCellField: 'comments',
-        title: 'Comments',
-        cellType: const OnixTextCell(readOnly: false),
-      ),
-    ];
-
-
-    
+    ),
+    OnixGridHeaderCell(
+      headerCellField: 'comments',
+      title: 'Comments',
+      cellType: const OnixTextCell(readOnly: false),
+    ),
+  ];
 }

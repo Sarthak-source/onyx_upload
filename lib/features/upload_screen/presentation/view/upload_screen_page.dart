@@ -16,10 +16,7 @@ class FileUploadScreen extends StatelessWidget {
       body: BlocListener<FileUploadCubit, FileUploadState>(
         listener: (context, state) {
           if (state.tableData.isNotEmpty) {
-            Utils.customOpenPopUpDialog(
-              context,
-              widget: const MyHomePage()
-            );
+            Utils.customOpenPopUpDialog(context, widget: const TableReview());
           }
         },
         child: BlocBuilder<FileUploadCubit, FileUploadState>(
@@ -33,7 +30,7 @@ class FileUploadScreen extends StatelessWidget {
                     onPressed: () => Utils.customOpenPopUpDialog(context,
                         widget: state.tableData.isEmpty
                             ? const UploadDialogBody()
-                            : const MyHomePage()),
+                            : const TableReview()),
                     child: const Text("Upload File"),
                   ),
                 ),
