@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:onyx_upload/core/utils/utils.dart';
 import 'package:onyx_upload/features/upload_screen/presentation/controller/upload_screen_cubit.dart';
 import 'package:onyx_upload/features/upload_screen/presentation/controller/upload_screen_state.dart';
+import 'package:onyx_upload/features/upload_screen/presentation/widgets/main_page_table.dart';
 import 'package:onyx_upload/features/upload_screen/presentation/widgets/upload_dialog_body.dart';
 import 'package:onyx_upload/features/upload_screen/presentation/widgets/uploaded_dialog_body.dart';
 
@@ -35,6 +36,7 @@ class FileUploadScreen extends StatelessWidget {
                   ),
                 ),
                 if (state.isLoading) const CircularProgressIndicator(),
+                Expanded(child: const ExcelGridViewer()),
               ],
             );
           },

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 import 'dart:typed_data';
 
 import 'package:csv/csv.dart';
@@ -11,7 +12,34 @@ import 'package:onyx_upload/features/upload_screen/presentation/controller/uploa
 class FileUploadCubit extends Cubit<FileUploadState> {
   FileUploadCubit() : super(const FileUploadState());
 
-  late final OnixGridStateManager stateManager;
+  
+
+  bool getCellTextStyle() {
+    var row = state.tableData[0]; // Get the first row (index 0)
+
+    bool hasEmptyCell = false;
+
+    // Iterate over each cell in the row and check if any cell is empty
+    for (var cellValue in row) {
+      String trimmedValue = cellValue.toString().trim();
+      log("test one - cell value: '${cellValue.toString()}'"); // Logs the raw cell value
+      log("test one - trimmed cell value: '$trimmedValue'"); // Logs the trimmed value
+
+      // If the trimmed value is empty or the original value was null/empty, mark it
+      if (trimmedValue.isEmpty) {
+        hasEmptyCell = true;
+        log("test one - Found empty or null cell!");
+        break; // Exit the loop early as we found an empty cell
+      }
+    }
+
+    // Log whether we have an empty cell
+    return hasEmptyCell;
+  }
+
+  showBanner() {
+    emit(state.copyWith(showMessage: !state.showMessage));
+  }
 
   // Method to pick a file and process it
   Future<void> pickFile() async {
@@ -101,4 +129,18 @@ class FileUploadCubit extends Cubit<FileUploadState> {
       cellType: const OnixTextCell(readOnly: false),
     ),
   ];
+
+  List<OnixGridHeaderCell> generateMainTableHeaders() {
+  return state.headers
+      .where((header) => header.trim().isNotEmpty) // Filter out empty headers
+      .map((header) {
+        log("generateMainTableHeaders: $header");
+        return OnixGridHeaderCell(
+          headerCellField: header,
+          title: header,
+          cellType: const OnixTextCell(readOnly: false),
+        );
+      })
+      .toList();
+}
 }
