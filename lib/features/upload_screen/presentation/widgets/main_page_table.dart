@@ -9,9 +9,15 @@ import 'package:onyx_upload/core/style/app_text_styles.dart';
 import '../controller/upload_screen_cubit.dart';
 import '../controller/upload_screen_state.dart';
 
-class ExcelGridViewer extends StatelessWidget {
+class ExcelGridViewer extends StatefulWidget {
   const ExcelGridViewer({super.key});
 
+  @override
+  State<ExcelGridViewer> createState() => _ExcelGridViewerState();
+}
+
+class _ExcelGridViewerState extends State<ExcelGridViewer> {
+  late final OnixGridStateManager stateManager;
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<FileUploadCubit, FileUploadState>(
@@ -38,7 +44,6 @@ class ExcelGridViewer extends StatelessWidget {
           return row;
         }).toList();
 
-
         for (final row in gridData) {
           // Create a new map by converting each OnixGridItem to a simpler representation
           final simpleRow = row.map((key, item) => MapEntry(key, item.value));
@@ -60,70 +65,77 @@ class ExcelGridViewer extends StatelessWidget {
           body: state.isLoading
               ? const Center(child: CircularProgressIndicator())
               : state.headers.isNotEmpty
-                  ? Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: OnixGrid(
-                        disableActions: false,
-                        columnWidths: {
-                          for (int i = 0;
-                              i < cubit.generateMainTableHeaders().length;
-                              i++)
-                            i: FixedColumnWidth(cubit
-                                    .generateMainTableHeaders()[i]
-                                    .title
-                                    .length *
-                                20)
-                        }, // Adjust column widths as needed
-                        bodyConfig: OnixGridBodyConfig(
-                          alignment: Alignment.center,
-                          textStyle: cubit.getCellTextStyle()
-                              ? AppTextStyles.styleRegular14(context,
-                                  color: Colors.red)
-                              : AppTextStyles.styleRegular14(context,
-                                  color: Colors.black),
-                        ),
-                        headerConfig: OnixGridHeaderConfig(
-                          rowColor: kSkyDarkColor,
-                          textStyle: AppTextStyles.styleRegular14(context,
-                              color:
-                                  Colors.white), // Apply custom TextStyle here
-                        ),
-                        addNewConfig: OnixGridAddNewConfig(
-                          addLabel: 'Add Row',
-                          saveLabel: 'Save',
-                          canAddNewValidator: () => true,
-                          validation: (validated, _) {
-                            if (!validated) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text(
-                                    'Please fill all fields',
-                                    style: TextStyle(color: Colors.white),
-                                  ),
-                                  backgroundColor: Colors.red,
-                                  behavior: SnackBarBehavior.floating,
-                                ),
-                              );
-                            }
-                          },
-                          onAdd: () {
-                            debugPrint("New row added");
-                          },
-                        ),
-                        totalItemsLabel: 'Total Rows',
-                        cellHeight: 40,
-                        enableBorder: true,
-                        isRowSelectable: false,
-                        isRowDeletable: true,
-                        enableIndexed: false,
-                        headerCells: cubit.generateMainTableHeaders(),
-                        bodyCells: gridData,
+                  ? state.showTable
+                      ? Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: OnixGrid(
+                            disableActions: false,
+                            columnWidths: {
+                              for (int i = 0;
+                                  i < cubit.generateMainTableHeaders().length;
+                                  i++)
+                                i: FixedColumnWidth(cubit
+                                        .generateMainTableHeaders()[i]
+                                        .title
+                                        .length *
+                                    20)
+                            }, // Adjust column widths as needed
+                            bodyConfig: OnixGridBodyConfig(
+                              alignment: Alignment.center,
+                              textStyle: AppTextStyles.styleRegular14(context,
+                                  color: kTextColor),
+                            ),
+                            headerConfig: OnixGridHeaderConfig(
+                              rowColor: kSkyDarkColor,
+                              textStyle: AppTextStyles.styleRegular14(context,
+                                  color: Colors
+                                      .white), // Apply custom TextStyle here
+                            ),
+                            addNewConfig: OnixGridAddNewConfig(
+                              addLabel: 'Add Row',
+                              saveLabel: 'Save',
+                              canAddNewValidator: () => true,
+                              validation: (validated, _) {
+                                if (!validated) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text(
+                                        'Please fill all fields',
+                                        style: TextStyle(color: Colors.white),
+                                      ),
+                                      backgroundColor: Colors.red,
+                                      behavior: SnackBarBehavior.floating,
+                                    ),
+                                  );
+                                }
+                              },
+                              onAdd: () {
+                                debugPrint("New row added");
+                              },
+                            ),
+                            totalItemsLabel: 'Total Rows',
+                            cellHeight: 40,
+                            enableBorder: true,
+                            isRowSelectable: false,
+                            isRowDeletable: false,
+                            enableIndexed: false,
+                            headerCells: cubit.generateMainTableHeaders(),
+                            bodyCells: gridData,
+                            onOptionSelected: (index) {
+                              if (index == 0) {
+                                stateManager.removeSelectedRows();
+                              } else {
+                                stateManager.saveAndAddNewRow();
+                              }
+                            },
 
-                        itemsPerPage: 5,
-                        onStateManagerCreated: (OnixGridStateManager value) {},
-                      ),
-                    )
-                  : const Center(child: Text("No data loaded")),
+                            itemsPerPage: 5,
+                            onStateManagerCreated: (stateManager) =>
+                                stateManager = stateManager,
+                          ),
+                        )
+                      : const Center(child: Text("No data loaded"))
+                  : const Center(child: Text("No sheet added")),
         );
       },
     );

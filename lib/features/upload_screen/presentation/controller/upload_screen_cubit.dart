@@ -12,7 +12,39 @@ import 'package:onyx_upload/features/upload_screen/presentation/controller/uploa
 class FileUploadCubit extends Cubit<FileUploadState> {
   FileUploadCubit() : super(const FileUploadState());
 
-  
+  bool cleanAndCheckEmptyCells(List<List<dynamic>> tableData) {
+    // Create a deep copy of tableData to avoid modifying the original list.
+    final List<List<dynamic>> cleanedData =
+        tableData.map((row) => List<dynamic>.from(row)).toList();
+
+    // Remove trailing empty cells from each row.
+    for (var row in cleanedData) {
+      while (row.isNotEmpty &&
+          (row.last == null || row.last.toString().trim().isEmpty)) {
+        row.removeLast();
+      }
+    }
+
+    // Remove empty rows at the end of the data.
+    while (cleanedData.isNotEmpty &&
+        cleanedData.last
+            .every((cell) => cell == null || cell.toString().trim().isEmpty)) {
+      cleanedData.removeLast();
+    }
+
+    // Check for any remaining empty cells in the cleaned data.
+    for (final row in cleanedData) {
+      for (final cell in row) {
+        if (cell == null || cell.toString().trim().isEmpty) {
+          // Found an empty cell.
+          return true;
+        }
+      }
+    }
+
+    // No empty cells found.
+    return false;
+  }
 
   bool getCellTextStyle() {
     var row = state.tableData[0]; // Get the first row (index 0)
@@ -39,6 +71,10 @@ class FileUploadCubit extends Cubit<FileUploadState> {
 
   showBanner() {
     emit(state.copyWith(showMessage: !state.showMessage));
+  }
+
+  showTable() {
+    emit(state.copyWith(showTable: !state.showTable));
   }
 
   // Method to pick a file and process it
@@ -131,16 +167,15 @@ class FileUploadCubit extends Cubit<FileUploadState> {
   ];
 
   List<OnixGridHeaderCell> generateMainTableHeaders() {
-  return state.headers
-      .where((header) => header.trim().isNotEmpty) // Filter out empty headers
-      .map((header) {
-        log("generateMainTableHeaders: $header");
-        return OnixGridHeaderCell(
-          headerCellField: header,
-          title: header,
-          cellType: const OnixTextCell(readOnly: false),
-        );
-      })
-      .toList();
-}
+    return state.headers
+        .where((header) => header.trim().isNotEmpty) // Filter out empty headers
+        .map((header) {
+      log("generateMainTableHeaders: $header");
+      return OnixGridHeaderCell(
+        headerCellField: header,
+        title: header,
+        cellType: const OnixTextCell(readOnly: false),
+      );
+    }).toList();
+  }
 }
