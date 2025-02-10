@@ -181,7 +181,8 @@ class _TableReviewState extends State<TableReview> {
                               children: [
                                 Text(row['fileColumn'] ?? '',
                                     style: cellTextStyle.copyWith(
-                                        fontSize: 12, color: kTextColor)),
+                                        fontSize: 12,
+                                        color: const Color(0xff819AA7))),
                                 Text(
                                   row['dbColumn'] ?? '',
                                   style: cellTextStyle,
