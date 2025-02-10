@@ -74,11 +74,11 @@ class FileUploadCubit extends Cubit<FileUploadState> {
   }
 
   textShow(String? val) {
-    emit(state.copyWith(fildtext: val));
+    emit(state.copyWith(customTextFildTable: val));
   }
 
   textTable(String? val) {
-    emit(state.copyWith(fildtable: val));
+    emit(state.copyWith(customDropdownTable: val));
   }
 
   showTable() {

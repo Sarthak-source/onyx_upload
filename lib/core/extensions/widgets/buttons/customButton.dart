@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:onyx_upload/core/extensions/responsive_ext.dart';
-import 'package:onyx_upload/core/responsive/spacer.dart';
+import 'package:onyx_upload/core/extensions/widgets/responsive/responsive_ext.dart';
+import 'package:onyx_upload/core/extensions/widgets/responsive/spacer.dart';
 import 'package:onyx_upload/core/style/app_colors.dart';
 import 'package:onyx_upload/core/style/app_text_styles.dart';
 
@@ -50,7 +50,6 @@ class CustomButton extends StatelessWidget {
         child: Center(
           child: isLoading
               ? const CircularProgressIndicator(
-                 
                   color: whiteColor,
                 )
               : Row(

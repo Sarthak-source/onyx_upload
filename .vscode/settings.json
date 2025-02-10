@@ -1,8 +1,11 @@
 {
   "dart.flutterSdkPath": ".fvm/versions/3.27.0",
   "cSpell.words": [
+    "dopdown",
+    "dropdowntable",
     "fildtable",
     "fildtext",
-    "Onix"
+    "Onix",
+    "textfild"
   ]
 }

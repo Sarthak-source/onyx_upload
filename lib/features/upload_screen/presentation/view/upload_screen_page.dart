@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:onyx_upload/core/utils/utils.dart';
+import 'package:onyx_upload/features/upload_screen/Others/utils.dart';
 import 'package:onyx_upload/features/upload_screen/presentation/controller/upload_screen_cubit.dart';
 import 'package:onyx_upload/features/upload_screen/presentation/controller/upload_screen_state.dart';
 import 'package:onyx_upload/features/upload_screen/presentation/widgets/upload_dialog_body.dart';

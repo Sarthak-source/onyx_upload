@@ -1,25 +1,24 @@
 import 'package:flutter/material.dart';
-import 'package:onyx_upload/core/responsive/spacer.dart';
+import 'package:onyx_upload/core/extensions/widgets/responsive/spacer.dart';
 import 'package:onyx_upload/core/style/app_colors.dart';
 import 'package:onyx_upload/core/style/app_text_styles.dart';
 
 class CustomTextIconButton extends StatelessWidget {
-  const CustomTextIconButton({
-    super.key,
-    this.onPressed,
-    this.title,
-    this.iconSize,
-    this.width,
-    this.height,
-    this.txtColor,
-    this.bgColor,
-    this.iconColor,
-    this.borderColor,
-    this.icon,
-    this.iconCustom,
-    this.borderRadius = 4,
-    this.margin=const EdgeInsets.symmetric(horizontal: 4, vertical: 4)
-  });
+  const CustomTextIconButton(
+      {super.key,
+      this.onPressed,
+      this.title,
+      this.iconSize,
+      this.width,
+      this.height,
+      this.txtColor,
+      this.bgColor,
+      this.iconColor,
+      this.borderColor,
+      this.icon,
+      this.iconCustom,
+      this.borderRadius = 4,
+      this.margin = const EdgeInsets.symmetric(horizontal: 4, vertical: 4)});
 
   final Function()? onPressed;
   final String? title;
@@ -58,7 +57,7 @@ class CustomTextIconButton extends StatelessWidget {
                   iconCustom ??
                       Icon(icon, size: iconSize ?? 12, color: iconColor),
                   if (title != null) ...[
-                     const WSpacer(8),
+                    const WSpacer(8),
                     Text(
                       title!,
                       style: AppTextStyles.styleLight12(

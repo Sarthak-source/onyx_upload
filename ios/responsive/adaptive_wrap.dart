@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:onyx_upload/core/extensions/responsive_ext.dart';
+import 'package:onyx_upload/core/extensions/widgets/responsive/responsive_ext.dart';
 
 class AdaptiveWrap extends StatelessWidget {
   final Widget mobile;
