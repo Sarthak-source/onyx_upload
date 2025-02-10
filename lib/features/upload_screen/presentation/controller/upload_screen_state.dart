@@ -5,6 +5,8 @@ class FileUploadState {
   final String? errorMessage;
   final bool showMessage;
   final bool showTable;
+  final String? fildtext;
+  final String? fildtable;
 
   // Default constructor
   const FileUploadState({
@@ -14,6 +16,8 @@ class FileUploadState {
     this.showMessage = false,
     this.showTable = false,
     this.errorMessage,
+    this.fildtext,
+    this.fildtable,
   });
 
   // `copyWith` method for updating parts of the state
@@ -24,14 +28,17 @@ class FileUploadState {
     bool? showMessage,
     bool? showTable,
     String? errorMessage,
+    String? fildtext,
+    String? fildtable,
   }) {
     return FileUploadState(
-      tableData: tableData ?? this.tableData,
-      headers: headers ?? this.headers,
-      isLoading: isLoading ?? this.isLoading,
-      showMessage: showMessage ?? this.showMessage,
-      showTable: showTable ?? this.showTable,
-      errorMessage: errorMessage ?? this.errorMessage,
-    );
+        tableData: tableData ?? this.tableData,
+        headers: headers ?? this.headers,
+        isLoading: isLoading ?? this.isLoading,
+        showMessage: showMessage ?? this.showMessage,
+        showTable: showTable ?? this.showTable,
+        errorMessage: errorMessage ?? this.errorMessage,
+        fildtext: fildtext ?? this.fildtext,
+        fildtable: fildtable ?? this.fildtable);
   }
 }

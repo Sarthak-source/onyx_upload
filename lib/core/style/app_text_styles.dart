@@ -51,7 +51,7 @@ abstract class AppTextStyles {
       FontWeight? fontWeight}) {
     return TextStyle(
         color: color ?? kTextColor,
-        fontSize: getResponsiveFontSize(context, fontSize: fontSize ?? 14),
+        fontSize: getResponsiveFontSize(context, fontSize: fontSize ?? 12),
         fontFamily: 'ReadexPro',
         fontWeight: fontWeight ?? FontWeight.w400,
         decoration: underLine ? TextDecoration.underline : null,

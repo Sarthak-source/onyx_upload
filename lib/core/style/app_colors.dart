@@ -107,8 +107,8 @@ const MaterialColor kWarningMColor = MaterialColor(
   0xFFF69B42,
   {
     100: Color(0xFFFEFAF5),
-    300: Color(0xFFF4E4CF),
-    500: Color(0xFFF69B42),
+    300: Color(0xffF1FEF0),
+    500: Color(0xffF69B42),
   },
 );
 
@@ -116,17 +116,12 @@ const MaterialColor kSuccessMColor = MaterialColor(
   0xFF319626,
   {
     300: Color(0xFFF1FEF0),
-    500: Color(0xFF319626),
+    500: Color(0xffF69B42),
   },
 );
 
-
-
 var lightBlue = const Color(0xFFD2ECFC);
-
 
 Color backgroundLightBlue = const Color(0xFFF1F9FF);
 
 Color azureColor = const Color(0xFF00B4D8);
-
-

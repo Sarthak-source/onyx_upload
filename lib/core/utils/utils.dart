@@ -9,11 +9,12 @@ class Utils {
   static customOpenPopUpDialog(BuildContext context,
           {double? width, double? height, required Widget widget}) =>
       showDialog(
+        barrierColor: Colors.white,
         context: context,
         builder: (context) => Dialog(
           backgroundColor: kColapsColor,
           surfaceTintColor: kColapsColor,
-          shadowColor: shadowColor,
+          shadowColor: kColapsColor,
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           child: Container(

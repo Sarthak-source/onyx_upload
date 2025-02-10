@@ -73,6 +73,14 @@ class FileUploadCubit extends Cubit<FileUploadState> {
     emit(state.copyWith(showMessage: !state.showMessage));
   }
 
+  textShow(String? val) {
+    emit(state.copyWith(fildtext: val));
+  }
+
+  textTable(String? val) {
+    emit(state.copyWith(fildtable: val));
+  }
+
   showTable() {
     emit(state.copyWith(showTable: !state.showTable));
   }
@@ -127,7 +135,7 @@ class FileUploadCubit extends Cubit<FileUploadState> {
     }
 
     emit(state.copyWith(
-      tableData: rows.length > 1 ? rows.sublist(1) : [],
+      tableData: rows.length > 1 ? rows.sublist(2) : [],
       headers:
           rows.isNotEmpty ? rows.first.map((e) => e.toString()).toList() : [],
       isLoading: false,

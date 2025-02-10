@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:onyx_upload/core/dropdowns/Customr_dopdown_with_search.dart';
 import 'package:onyx_upload/core/style/app_colors.dart';
 import 'package:onyx_upload/core/style/app_text_styles.dart'; // Import your AppTextStyles class
 import 'package:onyx_upload/core/buttons/custom_text_icon_button.dart';
@@ -49,7 +50,7 @@ class UploadDialogBody extends StatelessWidget {
                 CustomTextIconButton(
                   onPressed: () {
                     context.read<FileUploadCubit>().pickFile();
-                    Navigator.pop(context);
+                    // Navigator.pop(context);
                   },
                   title: "Upload File",
                   icon: Icons.upload_file,
@@ -76,7 +77,7 @@ class UploadDialogBody extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                child: CustomDropDownWithSearchBuilder(
+                child: CustomDropDownWithSearch(
                   fldNm: "templateDropdown", // Field name
                   hint: "Choose Template*", // Hint text
                   list: const ["Template 1", "Template 2"], // List of items
