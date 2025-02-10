@@ -12,34 +12,33 @@ class FileUploadScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // appBar: AppBar(title: const Text("Upload & View File")),
-      body: BlocListener<FileUploadCubit, FileUploadState>(
+      body: BlocConsumer<FileUploadCubit, FileUploadState>(
         listener: (context, state) {
           if (state.tableData.isNotEmpty) {
             Utils.customOpenPopUpDialog(context, widget: const TableReview());
           }
         },
-        child: BlocBuilder<FileUploadCubit, FileUploadState>(
-          builder: (context, state) {
-            return Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Center(
-                  child: ElevatedButton(
-                    onPressed: () => Utils.customOpenPopUpDialog(context,
-                        widget: state.tableData.isEmpty
-                            ? const UploadDialogBody()
-                            : const TableReview()),
-                    child: const Text("Upload File"),
+        builder: (context, state) {
+          return Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Center(
+                child: ElevatedButton(
+                  onPressed: () => Utils.customOpenPopUpDialog(
+                    context,
+                    widget: state.tableData.isEmpty
+                        ? const UploadDialogBody()
+                        : const TableReview(),
                   ),
+                  child: const Text("Upload File"),
                 ),
-                if (state.isLoading) const CircularProgressIndicator(),
-                // Expanded(child: const ExcelGridViewer()),
-              ],
-            );
-          },
-        ),
+              ),
+              if (state.isLoading) const CircularProgressIndicator(),
+              // Expanded(child: const ExcelGridViewer()),
+            ],
+          );
+        },
       ),
     );
   }
