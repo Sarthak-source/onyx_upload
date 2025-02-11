@@ -6,7 +6,7 @@ import 'package:onyx_upload/core/extensions/widgets/buttons/custom_text_icon_but
 import 'package:onyx_upload/core/extensions/widgets/dropdowns/Customr_dopdown_with_search.dart';
 import 'package:onyx_upload/core/style/app_colors.dart';
 import 'package:onyx_upload/core/style/app_text_styles.dart'; // Import your AppTextStyles class
-import 'package:onyx_upload/features/upload_screen/Others/title_dialog_page.dart';
+import 'package:onyx_upload/features/upload_screen/presentation/widgets/title_dialog_page.dart';
 import 'package:onyx_upload/features/upload_screen/presentation/controller/upload_screen_cubit.dart';
 import 'package:onyx_upload/features/upload_screen/presentation/controller/upload_screen_state.dart';
 

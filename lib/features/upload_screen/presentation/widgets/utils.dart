@@ -6,7 +6,7 @@ class Utils {
   Utils._();
 
   /// custom open PopUp Dialog
-  static customOpenPopUpDialog(BuildContext context,
+  static customUploadDialog(BuildContext context,
           {double? width, double? height, required Widget widget}) =>
       showDialog(
         barrierColor: Colors.white,

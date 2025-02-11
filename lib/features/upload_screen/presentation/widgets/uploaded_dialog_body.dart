@@ -5,20 +5,13 @@ import 'package:onyx_upload/core/extensions/widgets/dropdowns/Customr_dopdown_wi
 import 'package:onyx_upload/core/extensions/widgets/responsive/spacer.dart';
 import 'package:onyx_upload/core/style/app_colors.dart';
 import 'package:onyx_upload/core/style/app_text_styles.dart';
-import 'package:onyx_upload/features/upload_screen/Others/title_dialog_page.dart';
+import 'package:onyx_upload/features/upload_screen/presentation/widgets/title_dialog_page.dart';
 import 'package:onyx_upload/features/upload_screen/presentation/controller/upload_screen_cubit.dart';
 import 'package:onyx_upload/features/upload_screen/presentation/controller/upload_screen_state.dart';
 import 'package:onyx_upload/features/upload_screen/presentation/widgets/main_page_table.dart';
 import 'package:onyx_upload/features/upload_screen/presentation/widgets/message_banner.dart';
 
-class TableReview extends StatefulWidget {
-  const TableReview({Key? key}) : super(key: key);
-
-  @override
-  State<TableReview> createState() => _TableReviewState();
-}
-
-class _TableReviewState extends State<TableReview> {
+class TableReview extends StatelessWidget {
   // Local state for the checkbox.
   bool _makeFirstRowAddress = false;
 
@@ -67,11 +60,9 @@ class _TableReviewState extends State<TableReview> {
               child: Row(
                 children: [
                   Checkbox(
-                    value: _makeFirstRowAddress,
+                    value: state.checkbox,
                     onChanged: (bool? value) {
-                      setState(() {
-                        _makeFirstRowAddress = value ?? false;
-                      });
+                      context.read<FileUploadCubit>().checkbox();
                     },
                     fillColor:
                         MaterialStateProperty.resolveWith<Color>((states) {

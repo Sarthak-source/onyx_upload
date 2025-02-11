@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:onyx_upload/features/upload_screen/Others/utils.dart';
 import 'package:onyx_upload/features/upload_screen/presentation/controller/upload_screen_cubit.dart';
 import 'package:onyx_upload/features/upload_screen/presentation/controller/upload_screen_state.dart';
 import 'package:onyx_upload/features/upload_screen/presentation/widgets/upload_dialog_body.dart';
 import 'package:onyx_upload/features/upload_screen/presentation/widgets/uploaded_dialog_body.dart';
+import 'package:onyx_upload/features/upload_screen/presentation/widgets/utils.dart';
 
 class FileUploadScreen extends StatelessWidget {
   const FileUploadScreen({super.key});
@@ -15,7 +15,7 @@ class FileUploadScreen extends StatelessWidget {
       body: BlocConsumer<FileUploadCubit, FileUploadState>(
         listener: (context, state) {
           if (state.tableData.isNotEmpty) {
-            Utils.customOpenPopUpDialog(context, widget: const TableReview());
+            Utils.customUploadDialog(context, widget: TableReview());
           }
         },
         builder: (context, state) {
@@ -25,11 +25,11 @@ class FileUploadScreen extends StatelessWidget {
             children: [
               Center(
                 child: ElevatedButton(
-                  onPressed: () => Utils.customOpenPopUpDialog(
+                  onPressed: () => Utils.customUploadDialog(
                     context,
                     widget: state.tableData.isEmpty
                         ? const UploadDialogBody()
-                        : const TableReview(),
+                        : TableReview(),
                   ),
                   child: const Text("Upload File"),
                 ),

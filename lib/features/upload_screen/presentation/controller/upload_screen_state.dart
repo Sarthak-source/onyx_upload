@@ -7,6 +7,7 @@ class FileUploadState {
   final bool showTable;
   final String? customTextFildTable;
   final String? customDropdownTable;
+  final bool checkbox;
 
   // Default constructor
   const FileUploadState({
@@ -18,6 +19,7 @@ class FileUploadState {
     this.errorMessage,
     this.customTextFildTable,
     this.customDropdownTable,
+    this.checkbox = false,
   });
 
   // `copyWith` method for updating parts of the state
@@ -30,6 +32,7 @@ class FileUploadState {
     String? errorMessage,
     String? customTextFildTable,
     String? customDropdownTable,
+    bool? checkbox,
   }) {
     return FileUploadState(
         tableData: tableData ?? this.tableData,
@@ -39,6 +42,7 @@ class FileUploadState {
         showTable: showTable ?? this.showTable,
         errorMessage: errorMessage ?? this.errorMessage,
         customTextFildTable: customTextFildTable ?? this.customTextFildTable,
-        customDropdownTable: customDropdownTable ?? this.customDropdownTable);
+        customDropdownTable: customDropdownTable ?? this.customDropdownTable,
+        checkbox: checkbox ?? this.checkbox);
   }
 }

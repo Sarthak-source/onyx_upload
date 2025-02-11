@@ -85,6 +85,10 @@ class FileUploadCubit extends Cubit<FileUploadState> {
     emit(state.copyWith(showTable: !state.showTable));
   }
 
+  checkbox() {
+    emit(state.copyWith(checkbox: !state.checkbox));
+  }
+
   // Method to pick a file and process it
   Future<void> pickFile() async {
     emit(state.copyWith(isLoading: true)); // Start loading
