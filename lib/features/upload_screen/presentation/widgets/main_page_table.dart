@@ -29,18 +29,37 @@ class _ExcelGridViewerState extends State<ExcelGridViewer> {
 
           log("tableData ${state.tableData.toString()}");
 
-          final List<Map<String, OnixGridItem>> gridData =
-              state.tableData.map((entry) {
-            Map<String, OnixGridItem> row = {};
+          // final List<Map<String, OnixGridItem>> gridData =
+          //     state.tableData.map((entry) {
+          //   Map<String, OnixGridItem> row = {};
 
-            for (int i = 0; i < state.headers.length; i++) {
-              row[state.headers[i]] = OnixGridItem(
-                title: entry.length > i ? entry[i].toString() : '',
-                value: entry.length > i ? entry[i] : '',
-              );
-            }
-            return row;
-          }).toList();
+          //   for (int i = 0; i < state.headers.length; i++) {
+          //     row[state.headers[i]] = OnixGridItem(
+          //       title: entry.length > i ? entry[i].toString() : '',
+          //       value: entry.length > i ? entry[i] : '',
+          //     );
+          //   }
+          //   return row;
+          // }).toList();
+          final List<Map<String, OnixGridItem>> gridData =
+    state.tableData.map((entry) {
+  Map<String, OnixGridItem> row = {};
+
+  // نضمن أن الصف بنفس طول الهيدر
+  final paddedRow = List.generate(
+    state.headers.length,
+    (i) => i < entry.length ? entry[i] : '',
+  );
+
+  for (int i = 0; i < state.headers.length; i++) {
+    row[state.headers[i]] = OnixGridItem(
+      title: paddedRow[i].toString(),
+      value: paddedRow[i],
+    );
+  }
+  return row;
+}).toList();
+
 
           log("generateMainTableHeaders ${cubit.generateMainTableHeaders().length.toString()} ${gridData.length}");
 

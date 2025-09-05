@@ -8,34 +8,19 @@ import 'package:onyx_upload/core/style/app_text_styles.dart';
 import 'package:onyx_upload/features/upload_screen/presentation/widgets/title_dialog_page.dart';
 import 'package:onyx_upload/features/upload_screen/presentation/controller/upload_screen_cubit.dart';
 import 'package:onyx_upload/features/upload_screen/presentation/controller/upload_screen_state.dart';
-import 'package:onyx_upload/features/upload_screen/presentation/widgets/main_page_table.dart';
 import 'package:onyx_upload/features/upload_screen/presentation/widgets/message_banner.dart';
+import 'package:onyx_upload/features/upload_screen/presentation/widgets/main_page_table.dart';
 
 class TableReview extends StatelessWidget {
-  // Local state for the checkbox.
-  bool _makeFirstRowAddress = false;
+  TableReview({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final bool hasEmptyCells = context
+        .read<FileUploadCubit>()
+        .cleanAndCheckEmptyCells(context.read<FileUploadCubit>().state.tableData);
     return BlocBuilder<FileUploadCubit, FileUploadState>(
       builder: (context, state) {
-        final List<Map<String, String>> gridData =
-            state.tableData.asMap().entries.map((entry) {
-          final int index = entry.key;
-          final row = entry.value;
-          return {
-            'fileColumn': state.headers[index],
-            'dbColumn': row[index].toString(),
-            'comments': row[index].toString().isEmpty ? 'Missing Data' : '',
-          };
-        }).toList();
-        final mappingHeaders = context.read<FileUploadCubit>().mappingHeaders;
-
-        final List<double> columnWidths = mappingHeaders
-            .map<double>((header) => header.title.length * 18.0)
-            .toList();
-
-        // Determine the cell text style based on your cubit's logic.
         final TextStyle cellTextStyle =
             context.read<FileUploadCubit>().getCellTextStyle()
                 ? AppTextStyles.styleRegular14(context,
@@ -46,15 +31,22 @@ class TableReview extends StatelessWidget {
             .read<FileUploadCubit>()
             .cleanAndCheckEmptyCells(state.tableData);
 
+        // صف أول لاستخدامه في الـ Dropdown
+        final List<String> firstRowValues = state.tableData.isNotEmpty
+            ? state.tableData[0].map((e) => e.toString()).toList()
+            : [];
+
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
             const TitleDialogPage(title: 'Upload'),
+
+            // Checkbox "Make first row address"
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+              padding: const EdgeInsets.symmetric(horizontal: 12),
               decoration: BoxDecoration(
-                color: const Color(0xFFF2F2F2), // Light gray background
+                color: const Color(0xFFF2F2F2),
                 borderRadius: BorderRadius.circular(4),
               ),
               child: Row(
@@ -72,10 +64,7 @@ class TableReview extends StatelessWidget {
                       return Colors.white;
                     }),
                     checkColor: Colors.white,
-                    side: const BorderSide(
-                      color: Colors.white,
-                      width: 1,
-                    ),
+                    side: const BorderSide(color: Colors.white, width: 1),
                   ),
                   Text(
                     "Make the first row in the file the address",
@@ -84,7 +73,10 @@ class TableReview extends StatelessWidget {
                 ],
               ),
             ),
+
             const HSpacer(15),
+
+            // Template dropdown
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -104,122 +96,94 @@ class TableReview extends StatelessWidget {
                 ),
               ],
             ),
+
             const HSpacer(10),
-            // Message banner (shows warning if data is missing)
-            state.showMessage
-                ? MessageBanner(
-                    message: cleanAndCheckEmptyCells
-                        ? "Warning! Data Missing in line (1)."
-                        : "Everything seems valid.",
-                    backgroundColor: cleanAndCheckEmptyCells
-                        ? kWarningMColor.shade300
-                        : kSuccessMColor.shade300,
-                    textColor: cleanAndCheckEmptyCells
-                        ? kWarningMColor.shade500
-                        : kSuccessMColor.shade500,
-                  )
-                : const SizedBox.shrink(),
+
+            // Message Banner
+if (state.showMessage) ...[
+  MessageBanner(
+    message: hasEmptyCells
+        ? "Warning! Data Missing in line (1)."
+        : "Everything seems valid.",
+    backgroundColor: hasEmptyCells
+        ? kWarningMColor.shade300
+        : const Color(0xffFEFAF5),
+    textColor: hasEmptyCells ? kWarningMColor.shade500 : Colors.black,
+  ),
+],
             const HSpacer(10),
-            // Wrap the DataTable in scroll views to allow for both vertical and horizontal scrolling.
+
+            // DataTable
             Expanded(
               child: SingleChildScrollView(
                 scrollDirection: Axis.vertical,
                 child: DataTable(
-                  // Set header background color and text style.
                   headingRowColor: WidgetStateProperty.all(kSkyDarkColor),
                   headingRowHeight: 40,
                   headingTextStyle: AppTextStyles.styleRegular14(context,
                       color: Colors.white),
                   dataRowMinHeight: 40,
                   dataRowMaxHeight: 55,
-                  columnSpacing: 0,
-                  columns: [
-                    DataColumn(
-                      label: SizedBox(
-                        width: columnWidths.isNotEmpty ? columnWidths[0] : null,
-                        child: const Text(
-                          "File Column",
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                    ),
-                    DataColumn(
-                      label: SizedBox(
-                        width: columnWidths.length > 1 ? columnWidths[1] : null,
-                        child: const Text("Database Column",
-                            textAlign: TextAlign.center),
-                      ),
-                    ),
-                    DataColumn(
-                      label: SizedBox(
-                        width: columnWidths.length > 2 ? columnWidths[2] : null,
-                        child:
-                            const Text("Comments", textAlign: TextAlign.center),
-                      ),
-                    ),
+                  columns: const [
+                    DataColumn(label: Text("File Column")),
+                    DataColumn(label: Text("Database Column")),
+                    DataColumn(label: Text("Comments")),
                   ],
-                  rows: gridData.map((row) {
+                  rows: state.tableData.map((row) {
+                    final firstColumnValue =
+                        row.isNotEmpty ? row[0].toString() : '';
+
                     return DataRow(
                       cells: [
+                        // File Column
                         DataCell(
-                          SizedBox(
-                            width: columnWidths.isNotEmpty
-                                ? columnWidths[0]
-                                : null,
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(row['fileColumn'] ?? '',
-                                    style: cellTextStyle.copyWith(
-                                        fontSize: 12,
-                                        color: const Color(0xff819AA7))),
-                                Text(
-                                  row['dbColumn'] ?? '',
-                                  style: cellTextStyle,
-                                  textAlign: TextAlign.center,
-                                ),
-                              ],
-                            ),
-                          ),
-                          onTap: () {
-                            // Add cell tap functionality if needed.
-                          },
+                          Text(firstColumnValue,
+                              style: AppTextStyles.styleRegular14(context)),
                         ),
+
+                        // Database Column مع Dropdown لكل صف
+                       DataCell(
+  StatefulBuilder(
+    builder: (context, setStateRow) {
+      final cubit = context.read<FileUploadCubit>();
+      final rowIndex = state.tableData.indexOf(row);
+      String? selectedItem = cubit.getSelectedDropdown(rowIndex);
+
+      return SizedBox(
+        width: 300,
+        child: CustomDropDownWithSearch(
+          fldNm: "dbColumn_$firstColumnValue",
+          hint: "Select",
+          list: firstRowValues, // القيم من الصف الأول فقط
+          isRequired: false,
+          selectedItem: selectedItem,
+          onChanged: (val) {
+            setStateRow(() {
+              selectedItem = val;
+            });
+
+            // احفظ الاختيار في Cubit لكل صف
+            cubit.setSelectedDropdown(rowIndex, val);
+
+            debugPrint(
+              "Selected Row Value in this row: $selectedItem",
+            );
+          },
+        ),
+      );
+    },
+  ),
+),
+
+
+                        // Comments
                         DataCell(
-                          SizedBox(
-                            width: columnWidths.length > 1.2
-                                ? columnWidths[1]
-                                : null,
-                            child: CustomDropDownWithSearch(
-                              fldNm: "dbColumn",
-                              hint: row['fileColumn'] ?? '',
-                              labelText: row['fileColumn'] ?? '',
-                              list: const [
-                                "External ID",
-                                "Product ID",
-                                "Pricing",
-                                "Variant ID"
-                              ],
-                              isRequired: false,
-                              selectedItem: state.customDropdownTable,
-                              onChanged: (value) {
-                                context
-                                    .read<FileUploadCubit>()
-                                    .textTable(value);
-                              },
-                            ),
+                          Text(
+                            firstColumnValue.trim().isEmpty
+                                ? 'Missing Data'
+                                : '',
+                            style: AppTextStyles.styleRegular14(context),
                           ),
-                          onTap: () {},
-                        ),
-                        DataCell(
-                          SizedBox(
-                            width: columnWidths.length > 2
-                                ? columnWidths[2]
-                                : null,
-                            child: Text(row['comments'] ?? '',
-                                style: cellTextStyle),
-                          ),
-                          onTap: () {},
                         ),
                       ],
                     );
@@ -227,8 +191,10 @@ class TableReview extends StatelessWidget {
                 ),
               ),
             ),
+
             const HSpacer(20),
-            // Bottom buttons – show different button sets based on state.showMessage
+
+            // Bottom Buttons
             state.showMessage
                 ? Row(
                     mainAxisAlignment: MainAxisAlignment.end,
@@ -239,7 +205,6 @@ class TableReview extends StatelessWidget {
                           cubit.showTable();
                           Future.delayed(const Duration(milliseconds: 100), () {
                             Navigator.push(
-                              // ignore: use_build_context_synchronously
                               context,
                               MaterialPageRoute(
                                   builder: (context) =>
