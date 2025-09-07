@@ -16,25 +16,17 @@ class TableReview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bool hasEmptyCells = context
-        .read<FileUploadCubit>()
-        .cleanAndCheckEmptyCells(context.read<FileUploadCubit>().state.tableData);
     return BlocBuilder<FileUploadCubit, FileUploadState>(
       builder: (context, state) {
+        final bool hasEmptyCells = context
+            .read<FileUploadCubit>()  
+            .cleanAndCheckEmptyCells(state.tableData);
+            
         final TextStyle cellTextStyle =
             context.read<FileUploadCubit>().getCellTextStyle()
                 ? AppTextStyles.styleRegular14(context,
                     color: const Color(0xff4b4b4b))
                 : AppTextStyles.styleRegular14(context, color: Colors.white);
-
-        final bool cleanAndCheckEmptyCells = context
-            .read<FileUploadCubit>()
-            .cleanAndCheckEmptyCells(state.tableData);
-
-        // صف أول لاستخدامه في الـ Dropdown
-        final List<String> firstRowValues = state.tableData.isNotEmpty
-            ? state.tableData[0].map((e) => e.toString()).toList()
-            : [];
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -99,189 +91,392 @@ class TableReview extends StatelessWidget {
 
             const HSpacer(10),
 
+            if (state.customHeaders.isEmpty && state.tableData.isNotEmpty) ...[
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.orange[100],
+                  borderRadius: BorderRadius.circular(4),
+                  border: Border.all(color: Colors.orange),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.warning, color: Colors.orange[800]),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "Using first row as headers",
+                            style: AppTextStyles.styleRegular14(context).copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.orange[800],
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            "You can set custom headers for better mapping",
+                            style: AppTextStyles.styleRegular12(context).copyWith(
+                              color: Colors.orange[800],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    ElevatedButton(
+                      onPressed: () => _showCustomHeadersDialog(context),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.orange[800],
+                        foregroundColor: Colors.white,
+                      ),
+                      child: const Text("Set Headers"),
+                    ),
+                  ],
+                ),
+              ),
+              const HSpacer(10),
+            ],
+
             // Message Banner
-if (state.showMessage) ...[
-  MessageBanner(
-    message: hasEmptyCells
-        ? "Warning! Data Missing in line (1)."
-        : "Everything seems valid.",
-    backgroundColor: hasEmptyCells
-        ? kWarningMColor.shade300
-        : const Color(0xffFEFAF5),
-    textColor: hasEmptyCells ? kWarningMColor.shade500 : Colors.black,
-  ),
-],
-            const HSpacer(10),
+            if (state.showMessage) ...[
+              MessageBanner(
+                message: hasEmptyCells
+                    ? "Warning! Data Missing in line (1)."
+                    : "Everything seems valid.",
+                backgroundColor: hasEmptyCells
+                    ? kWarningMColor.shade300
+                    : const Color(0xffFEFAF5),
+                textColor: hasEmptyCells ? kWarningMColor.shade500 : Colors.black,
+              ),
+              const HSpacer(10),
+            ],
 
             // DataTable
             Expanded(
-              child: SingleChildScrollView(
-                scrollDirection: Axis.vertical,
-                child: DataTable(
-                  headingRowColor: WidgetStateProperty.all(kSkyDarkColor),
-                  headingRowHeight: 40,
-                  headingTextStyle: AppTextStyles.styleRegular14(context,
-                      color: Colors.white),
-                  dataRowMinHeight: 40,
-                  dataRowMaxHeight: 55,
-                  columns: const [
-                    DataColumn(label: Text("File Column")),
-                    DataColumn(label: Text("Database Column")),
-                    DataColumn(label: Text("Comments")),
-                  ],
-                  rows: state.tableData.map((row) {
-                    final firstColumnValue =
-                        row.isNotEmpty ? row[0].toString() : '';
-
-                    return DataRow(
-                      cells: [
-                        // File Column
-                        DataCell(
-                          Text(firstColumnValue,
-                              style: AppTextStyles.styleRegular14(context)),
-                        ),
-
-                        // Database Column مع Dropdown لكل صف
-                       DataCell(
-  StatefulBuilder(
-    builder: (context, setStateRow) {
-      final cubit = context.read<FileUploadCubit>();
-      final rowIndex = state.tableData.indexOf(row);
-      String? selectedItem = cubit.getSelectedDropdown(rowIndex);
-
-      return SizedBox(
-        width: 300,
-        child: CustomDropDownWithSearch(
-          fldNm: "dbColumn_$firstColumnValue",
-          hint: "Select",
-          list: firstRowValues, // القيم من الصف الأول فقط
-          isRequired: false,
-          selectedItem: selectedItem,
-          onChanged: (val) {
-            setStateRow(() {
-              selectedItem = val;
-            });
-
-            // احفظ الاختيار في Cubit لكل صف
-            cubit.setSelectedDropdown(rowIndex, val);
-
-            debugPrint(
-              "Selected Row Value in this row: $selectedItem",
-            );
-          },
-        ),
-      );
-    },
-  ),
-),
-
-
-                        // Comments
-                        DataCell(
+              child: state.tableData.isNotEmpty 
+                  ? SingleChildScrollView(
+                      scrollDirection: Axis.vertical,
+                      child: DataTable(
+                        headingRowColor: WidgetStateProperty.all(kSkyDarkColor),
+                        headingRowHeight: 40,
+                        headingTextStyle: AppTextStyles.styleRegular14(context,
+                            color: Colors.white),
+                        dataRowMinHeight: 60,
+                        dataRowMaxHeight: 70,
+                        columns: const [
+                          DataColumn(label: Text("File Column")),
+                          DataColumn(label: Text("Database Column")),
+                          DataColumn(label: Text("Comments")),
+                        ],
+                        rows: _buildDataRows(context, state),
+                      ),
+                    )
+                  : Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.table_chart, size: 50, color: Colors.grey[400]),
+                          const SizedBox(height: 16),
                           Text(
-                            firstColumnValue.trim().isEmpty
-                                ? 'Missing Data'
-                                : '',
-                            style: AppTextStyles.styleRegular14(context),
+                            "No data available",
+                            style: AppTextStyles.styleRegular16(context).copyWith(
+                              color: Colors.grey[600],
+                            ),
                           ),
-                        ),
-                      ],
-                    );
-                  }).toList(),
-                ),
-              ),
+                          const SizedBox(height: 8),
+                          Text(
+                            "Please upload a file to see the data",
+                            style: AppTextStyles.styleRegular14(context).copyWith(
+                              color: Colors.grey[500],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
             ),
 
             const HSpacer(20),
 
             // Bottom Buttons
-            state.showMessage
-                ? Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      CustomTextIconButton(
-                        onPressed: () {
-                          final cubit = context.read<FileUploadCubit>();
-                          cubit.showTable();
-                          Future.delayed(const Duration(milliseconds: 100), () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) =>
-                                      const ExcelGridViewer()),
-                            );
-                          });
-                        },
-                        title: "Upload",
-                        icon: Icons.upload_file,
-                        iconColor: Colors.white,
-                        bgColor: kCardGreenColor,
-                        txtColor: Colors.white,
-                        iconSize: 24,
-                        height: 35,
-                      ),
-                      const SizedBox(width: 8),
-                      CustomTextIconButton(
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                        },
-                        title: "Cancel",
-                        icon: Icons.close,
-                        iconColor: Colors.white,
-                        bgColor: kTextFieldColor,
-                        txtColor: Colors.white,
-                        iconSize: 24,
-                        height: 35,
-                      ),
-                      const SizedBox(width: 8),
-                    ],
-                  )
-                : Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      CustomTextIconButton(
-                        onPressed: () {
-                          Navigator.pop(context);
-                        },
-                        title: "Upload another File",
-                        iconColor: Colors.white,
-                        bgColor: kCardGreenColor,
-                        txtColor: Colors.white,
-                        iconSize: 0,
-                        height: 35,
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
+            _buildBottomButtons(context, state),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildBottomButtons(BuildContext context, FileUploadState state) {
+    if (state.showMessage) {
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          CustomTextIconButton(
+            onPressed: () {
+              final cubit = context.read<FileUploadCubit>();
+              cubit.showTable();
+              Future.delayed(const Duration(milliseconds: 100), () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const ExcelGridViewer()),
+                );
+              });
+            },
+            title: "Upload",
+            icon: Icons.upload_file,
+            iconColor: Colors.white,
+            bgColor: kCardGreenColor,
+            txtColor: Colors.white,
+            iconSize: 24,
+            height: 35,
+          ),
+          const SizedBox(width: 8),
+          CustomTextIconButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            title: "Cancel",
+            icon: Icons.close,
+            iconColor: Colors.white,
+            bgColor: kTextFieldColor,
+            txtColor: Colors.white,
+            iconSize: 24,
+            height: 35,
+          ),
+        ],
+      );
+    } else {
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          // زر لتعيين العناوين إذا لم تكن معينة
+          if (state.customHeaders.isEmpty && state.tableData.isNotEmpty)
+            CustomTextIconButton(
+              onPressed: () {
+                _showCustomHeadersDialog(context);
+              },
+              title: "Set Headers",
+              icon: Icons.edit,
+              iconColor: Colors.white,
+              bgColor: Colors.blue,
+              txtColor: Colors.white,
+              iconSize: 20,
+              height: 35,
+            )
+          else if (state.tableData.isNotEmpty)
+            CustomTextIconButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              title: "Upload another File",
+              iconColor: Colors.white,
+              bgColor: kCardGreenColor,
+              txtColor: Colors.white,
+              iconSize: 0,
+              height: 35,
+            )
+          else
+            Container(),
+
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              CustomTextIconButton(
+  onPressed: () {
+    context.read<FileUploadCubit>().showBanner();
+  },
+  title: "Test Data",
+  icon: Icons.check,
+  iconColor: Colors.white,
+  bgColor: kSkyDarkColor,
+  txtColor: Colors.white,
+  iconSize: 24,
+  height: 35,
+),
+              const SizedBox(width: 8),
+              CustomTextIconButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                title: "Cancel",
+                icon: Icons.close,
+                iconColor: Colors.white,
+                bgColor: kTextFieldColor,
+                txtColor: Colors.white,
+                iconSize: 24,
+                height: 35,
+              ),
+            ],
+          ),
+        ],
+      );
+    }
+  }
+
+List<DataRow> _buildDataRows(BuildContext context, FileUploadState state) {
+  if (state.tableData.isEmpty) return <DataRow>[];
+
+  List<String> headers = state.customHeaders.isNotEmpty 
+      ? state.customHeaders 
+      : state.headers;
+
+  List<dynamic> firstDataRow = state.tableData.isNotEmpty ? state.tableData[0] : [];
+  
+  return List.generate(headers.length, (colIndex) {
+    final columnTitle = colIndex < headers.length ? headers[colIndex] : 'Column ${colIndex + 1}';
+    final firstValue = colIndex < firstDataRow.length ? firstDataRow[colIndex]?.toString() ?? '' : '';
+
+    final bool shouldShowMissingData = state.showMissingData;
+    final bool isEmptyCell = firstValue.trim().isEmpty;
+    final bool showMissingDataWarning = shouldShowMissingData && isEmptyCell;
+
+    return DataRow(
+      cells: [
+        DataCell(
+          Container(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  columnTitle,
+                  style: AppTextStyles.styleRegular14(context).copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                if (firstValue.isNotEmpty)
+                  Text(
+                    firstValue.length > 50 
+                      ? firstValue.substring(0, 50) + '...' 
+                      : firstValue,
+                    style: AppTextStyles.styleRegular12(
+                      context,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ),
+
+        DataCell(
+          StatefulBuilder(
+            builder: (context, setStateRow) {
+              final cubit = context.read<FileUploadCubit>();
+              String? selectedItem = cubit.getSelectedDropdown(colIndex);
+
+              return SizedBox(
+                width: 300,
+                child: CustomDropDownWithSearch(
+                  fldNm: "dbColumn_$columnTitle",
+                  hint: "Select",
+                  list: headers,
+                  isRequired: false,
+                  selectedItem: selectedItem,
+                  onChanged: (val) {
+                    setStateRow(() {
+                      selectedItem = val;
+                    });
+                    cubit.setSelectedDropdown(colIndex, val);
+                  },
+                ),
+              );
+            },
+          ),
+        ),
+
+        DataCell(
+          Text(
+            showMissingDataWarning ? 'Missing Data' : '',
+            style: AppTextStyles.styleRegular14(context).copyWith(
+              color: showMissingDataWarning ? Colors.red : Colors.transparent,
+            ),
+          ),
+        ),
+      ],
+    );
+  });
+}
+
+  void _showCustomHeadersDialog(BuildContext context) {
+    final cubit = context.read<FileUploadCubit>();
+    final state = context.read<FileUploadCubit>().state;
+    
+    if (state.tableData.isEmpty) return;
+    
+    List<TextEditingController> controllers = [];
+    
+    List<dynamic> firstRow = state.tableData[0];
+    
+    for (int i = 0; i < firstRow.length; i++) {
+      controllers.add(TextEditingController(
+        text: state.customHeaders.isNotEmpty && i < state.customHeaders.length
+            ? state.customHeaders[i]
+            : firstRow[i]?.toString() ?? 'Column ${i + 1}'
+      ));
+    }
+    
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("Set Custom Headers"),
+          content: SizedBox(
+            width: MediaQuery.of(context).size.width * 0.8,
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  const Text("Please define column headers for your data:"),
+                  const SizedBox(height: 20),
+                  ...List.generate(firstRow.length, (index) {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8.0),
+                      child: Row(
                         children: [
-                          CustomTextIconButton(
-                            onPressed: () {
-                              context.read<FileUploadCubit>().showBanner();
-                            },
-                            title: "Test Data",
-                            icon: Icons.check,
-                            iconColor: Colors.white,
-                            bgColor: kSkyDarkColor,
-                            txtColor: Colors.white,
-                            iconSize: 24,
-                            height: 35,
+                          Expanded(
+                            child: TextField(
+                              controller: controllers[index],
+                              decoration: InputDecoration(
+                                labelText: "Column ${index + 1} Header",
+                                border: const OutlineInputBorder(),
+                              ),
+                            ),
                           ),
-                          const SizedBox(width: 8),
-                          CustomTextIconButton(
-                            onPressed: () {
-                              Navigator.pop(context);
-                            },
-                            title: "Cancel",
-                            icon: Icons.close,
-                            iconColor: Colors.white,
-                            bgColor: kTextFieldColor,
-                            txtColor: Colors.white,
-                            iconSize: 24,
-                            height: 35,
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              "Sample: ${firstRow[index]!.toString().length > 30 
+                                ? firstRow[index]!.toString().substring(0, 30) + '...' 
+                                : firstRow[index]?.toString() ?? ''}",
+                              style: TextStyle(color: Colors.grey[600]),
+                            ),
                           ),
                         ],
                       ),
-                    ],
-                  ),
+                    );
+                  }),
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text("Cancel"),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                List<String> headers = controllers.map((c) => c.text).toList();
+                cubit.setCustomHeaders(headers);
+                Navigator.of(context).pop();
+              },
+              child: const Text("Save Headers"),
+            ),
           ],
         );
       },

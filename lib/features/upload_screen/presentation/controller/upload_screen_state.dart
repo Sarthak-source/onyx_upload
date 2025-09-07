@@ -8,6 +8,10 @@ class FileUploadState {
   final String? customTextFildTable;
   final String? customDropdownTable;
   final bool checkbox;
+  final List<String> customHeaders;
+  final bool hasEmptyCells;
+  final bool showMissingData;
+
 
   // Default constructor
   const FileUploadState({
@@ -20,7 +24,12 @@ class FileUploadState {
     this.customTextFildTable,
     this.customDropdownTable,
     this.checkbox = false,
+    this.customHeaders = const [],
+    this.hasEmptyCells = false,
+    this.showMissingData = false,
   });
+
+  get isNotEmpty => null;
 
   // `copyWith` method for updating parts of the state
   FileUploadState copyWith({
@@ -33,6 +42,8 @@ class FileUploadState {
     String? customTextFildTable,
     String? customDropdownTable,
     bool? checkbox,
+    List<String>? customHeaders,
+    bool? showMissingData,
   }) {
     return FileUploadState(
         tableData: tableData ?? this.tableData,
@@ -43,6 +54,8 @@ class FileUploadState {
         errorMessage: errorMessage ?? this.errorMessage,
         customTextFildTable: customTextFildTable ?? this.customTextFildTable,
         customDropdownTable: customDropdownTable ?? this.customDropdownTable,
-        checkbox: checkbox ?? this.checkbox);
+        checkbox: checkbox ?? this.checkbox,customHeaders: customHeaders ?? this.customHeaders, showMissingData: showMissingData ?? this.showMissingData,);
+        
+        
   }
 }
