@@ -1,3 +1,5 @@
+import 'package:onyx_upload/core/extensions/widgets/models/drag_model.dart';
+
 class FileUploadState {
   final List<List<dynamic>> tableData;
   final List<String> headers;
@@ -11,6 +13,10 @@ class FileUploadState {
   final List<String> customHeaders;
   final bool hasEmptyCells;
   final bool showMissingData;
+  // final int selectedRowIndex;
+  final List<String> selectedColumns;
+  final List<CustomDragTargetDetails> selectedItems;
+  final List<CustomDragTargetDetails> availableItems;
 
 
   // Default constructor
@@ -27,6 +33,10 @@ class FileUploadState {
     this.customHeaders = const [],
     this.hasEmptyCells = false,
     this.showMissingData = false,
+    //  this.selectedRowIndex = 0,
+     this.selectedColumns = const [],
+     required this.selectedItems,
+      this.availableItems = const [],
   });
 
   get isNotEmpty => null;
@@ -44,6 +54,11 @@ class FileUploadState {
     bool? checkbox,
     List<String>? customHeaders,
     bool? showMissingData,
+    // int? selectedRowIndex,
+    List<String>? selectedColumns,
+    List<CustomDragTargetDetails>? selectedItems,
+    List<CustomDragTargetDetails>? availableItems,
+
   }) {
     return FileUploadState(
         tableData: tableData ?? this.tableData,
@@ -54,7 +69,12 @@ class FileUploadState {
         errorMessage: errorMessage ?? this.errorMessage,
         customTextFildTable: customTextFildTable ?? this.customTextFildTable,
         customDropdownTable: customDropdownTable ?? this.customDropdownTable,
-        checkbox: checkbox ?? this.checkbox,customHeaders: customHeaders ?? this.customHeaders, showMissingData: showMissingData ?? this.showMissingData,);
+        checkbox: checkbox ?? this.checkbox,customHeaders: customHeaders ?? this.customHeaders, showMissingData: showMissingData ?? this.showMissingData,
+        //  selectedRowIndex: selectedRowIndex ?? this.selectedRowIndex,
+         selectedColumns: selectedColumns ?? this.selectedColumns,
+         selectedItems: selectedItems ?? this.selectedItems,
+         availableItems: availableItems ?? this.availableItems,
+         );
         
         
   }
