@@ -77,11 +77,11 @@ class UploadDialogBody extends StatelessWidget {
                           onPressed: () {
                             showDialog(
                               context: context,
-                              builder: (_) => const CreateTemplateDialog(),
+                              builder: (_) => const CreateTemplateFinalDialog(selectedColumns: [],),
                             );
                           },
                           style: TextButton.styleFrom(
-                            backgroundColor: actionColors, // لون الخلفية مطابق للصورة
+                            backgroundColor: actionColors, 
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                           ),
                           child: Text(
@@ -91,7 +91,6 @@ class UploadDialogBody extends StatelessWidget {
                         ),
                 ],
               ),const SizedBox(height: 12),
-              // مربع رفع الملف
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(16.0),
@@ -114,10 +113,8 @@ class UploadDialogBody extends StatelessWidget {
                       style: AppTextStyles.styleRegular14(context, color: Colors.black87),
                     ),
                     const SizedBox(height: 12),
-                    // زر "رفع الملف"
                     CustomTextIconButton(
                       onPressed: () {
-                        // ... (باقي الكود)
                       },
                       title: "رفع الملف",
                       icon: Icons.upload_file,

@@ -1,4 +1,6 @@
 import 'package:onyx_upload/core/extensions/widgets/models/drag_model.dart';
+import 'package:pluto_grid/src/model/pluto_column.dart';
+import 'package:pluto_grid/src/model/pluto_row.dart';
 
 class FileUploadState {
   final List<List<dynamic>> tableData;
@@ -57,7 +59,7 @@ class FileUploadState {
     // int? selectedRowIndex,
     List<String>? selectedColumns,
     List<CustomDragTargetDetails>? selectedItems,
-    List<CustomDragTargetDetails>? availableItems,
+    List<CustomDragTargetDetails>? availableItems, required List<PlutoColumn> plutoColumns, required List<PlutoRow> plutoRows,
 
   }) {
     return FileUploadState(

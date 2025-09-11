@@ -6,8 +6,9 @@ import 'package:bloc/bloc.dart';
 import 'package:csv/csv.dart';
 import 'package:excel/excel.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:onyx_ix_cutsom_grid/onix_grid.dart';
+import 'package:pluto_grid/pluto_grid.dart';
 import 'package:onyx_upload/core/extensions/widgets/models/drag_model.dart';
 import 'package:onyx_upload/features/upload_screen/presentation/controller/upload_screen_state.dart';
 
@@ -30,12 +31,14 @@ class FileUploadCubit extends Cubit<FileUploadState> {
         ]));
 
   Map<int, String?> selectedDropdownPerRow = {};
+  List<PlutoColumn> plutoColumns = [];
+  List<PlutoRow> plutoRows = [];
 
   // ==================== File Processing Methods ====================
 
   /// Handles picking and processing an Excel or CSV file.
   Future<void> pickAndProcessExcelFile() async {
-    emit(state.copyWith(isLoading: true));
+    emit(state.copyWith(isLoading: true, plutoColumns: [], plutoRows: []));
     try {
       FilePickerResult? result = await FilePicker.platform.pickFiles(
         type: FileType.custom,
@@ -54,14 +57,14 @@ class FileUploadCubit extends Cubit<FileUploadState> {
           }
         }
       } else {
-        emit(state.copyWith(isLoading: false));
+        emit(state.copyWith(isLoading: false, plutoColumns: [], plutoRows: []));
       }
     } on PlatformException catch (e) {
       log("Unsupported operation: ${e.toString()}");
-      emit(state.copyWith(isLoading: false, errorMessage: "Unsupported operation: ${e.message}"));
+      emit(state.copyWith(isLoading: false, errorMessage: "Unsupported operation: ${e.message}", plutoColumns: [], plutoRows: []));
     } catch (e) {
       log("Error picking file: ${e.toString()}");
-      emit(state.copyWith(isLoading: false, errorMessage: "Error picking file: ${e.toString()}"));
+      emit(state.copyWith(isLoading: false, errorMessage: "Error picking file: ${e.toString()}", plutoColumns: [], plutoRows: []));
     }
   }
 
@@ -71,16 +74,10 @@ class FileUploadCubit extends Cubit<FileUploadState> {
       String csvString = utf8.decode(bytes);
       List<List<dynamic>> fields = const CsvToListConverter().convert(csvString);
 
-      emit(state.copyWith(
-        tableData: fields,
-        headers: fields.isNotEmpty ? fields.first.map((e) => e.toString()).toList() : [],
-        showTable: true,
-        isLoading: false,
-        selectedColumns: [],
-      ));
+      _updateStateWithData(fields);
     } catch (e) {
       log("Error processing CSV: $e");
-      emit(state.copyWith(errorMessage: 'Failed to process CSV file', isLoading: false));
+      emit(state.copyWith(errorMessage: 'Failed to process CSV file', isLoading: false, plutoColumns: [], plutoRows: []));
     }
   }
 
@@ -98,50 +95,120 @@ class FileUploadCubit extends Cubit<FileUploadState> {
         }
       }
 
-      emit(state.copyWith(
-        tableData: rows,
-        headers: rows.isNotEmpty ? rows.first.map((e) => e.toString()).toList() : [],
-        showTable: true,
-        isLoading: false,
-        selectedColumns: [],
-      ));
+      _updateStateWithData(rows);
     } catch (e) {
       log("Error processing Excel: $e");
-      emit(state.copyWith(errorMessage: 'Failed to process Excel file', isLoading: false));
+      emit(state.copyWith(errorMessage: 'Failed to process Excel file', isLoading: false, plutoColumns: [], plutoRows: []));
     }
   }
 
-  // ==================== State Management Methods ====================
+  /// Updates state with processed data and creates PlutoGrid columns/rows
+  void _updateStateWithData(List<List<dynamic>> rows) {
+    final headers = rows.isNotEmpty ? rows.first.map((e) => e.toString()).toList() : [];
+    
+    // Create PlutoGrid columns
+    plutoColumns = headers.map((header) {
+      return PlutoColumn(
+        title: header,
+        field: _toFieldName(header, headers.indexOf(header)),
+        type: PlutoColumnType.text(),
+        enableSorting: true,
+        enableEditingMode: false,
+        width: header.length * 10.0 + 50,
+        textAlign: PlutoColumnTextAlign.center,
+      );
+    }).toList();
 
+    // Create PlutoGrid rows (skip header row)
+    plutoRows = rows.length > 1 
+      ? rows.sublist(1).map((rowData) {
+          final cells = <String, PlutoCell>{};
+          
+          for (int i = 0; i < headers.length; i++) {
+            final value = i < rowData.length ? rowData[i].toString() : '';
+            cells[headers[i]] = PlutoCell(value: value);
+          }
+          
+          return PlutoRow(cells: cells);
+        }).toList()
+      : [];
+
+    emit(state.copyWith(
+      tableData: rows,
+      headers: headers.cast<String>(),
+      showTable: true,
+      isLoading: false,
+      selectedColumns: [],
+      plutoColumns: plutoColumns,
+      plutoRows: plutoRows,
+    ));
+  }
+
+  /// Converts a column title to a safe field name
+  String _toFieldName(String title, int index) {
+    final safe = title.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]+'), '_');
+    return 'c${index}_$safe';
+  }
+
+  /// Builds PlutoGrid columns from selected column names
+  void buildPlutoGridFromSelectedColumns(List<String> selectedColumns) {
+    plutoColumns = selectedColumns.map((columnName) {
+      return PlutoColumn(
+        title: columnName,
+        field: _toFieldName(columnName, selectedColumns.indexOf(columnName)),
+        type: PlutoColumnType.text(),
+        enableSorting: true,
+        readOnly: true,
+        width: columnName.length * 10.0 + 50,
+      );
+    }).toList();
+
+    // Keep rows empty as requested
+    plutoRows = [];
+
+    emit(state.copyWith(
+      plutoColumns: plutoColumns,
+      plutoRows: plutoRows,
+      showTable: true,
+      selectedColumns: selectedColumns,
+    ));
+  }
+
+  // ==================== State Management Methods ====================
+  
+  void updateSelectedHeaders(List<String> newHeaders) {
+    emit(state.copyWith(headers: newHeaders, plutoColumns: [], plutoRows: []));
+  }
+  
   /// Toggles the visibility of the message banner.
   void showBanner() {
-    emit(state.copyWith(showMessage: !state.showMessage));
+    emit(state.copyWith(showMessage: !state.showMessage, plutoColumns: [], plutoRows: []));
   }
 
   /// Updates the text field value in the state.
   void textShow(String? val) {
-    emit(state.copyWith(customTextFildTable: val));
+    emit(state.copyWith(customTextFildTable: val, plutoColumns: [], plutoRows: []));
   }
 
   /// Updates the dropdown table value in the state.
   void textTable(String? val) {
-    emit(state.copyWith(customDropdownTable: val));
+    emit(state.copyWith(customDropdownTable: val, plutoColumns: [], plutoRows: []));
   }
 
   /// Toggles the visibility of the data table.
   void showTable() {
-    emit(state.copyWith(showTable: !state.showTable));
+    emit(state.copyWith(showTable: !state.showTable, plutoColumns: [], plutoRows: []));
   }
 
   /// Toggles the checkbox state.
   void checkbox() {
-    emit(state.copyWith(checkbox: !state.checkbox));
+    emit(state.copyWith(checkbox: !state.checkbox, plutoColumns: [], plutoRows: []));
   }
 
   /// Sets the selected dropdown value for a specific row.
   void setSelectedDropdown(int rowIndex, String? value) {
     selectedDropdownPerRow[rowIndex] = value;
-    emit(state.copyWith(customDropdownTable: value));
+    emit(state.copyWith(customDropdownTable: value, plutoColumns: [], plutoRows: []));
   }
 
   /// Gets the selected dropdown value for a specific row.
@@ -151,7 +218,7 @@ class FileUploadCubit extends Cubit<FileUploadState> {
 
   /// Sets custom headers for the grid.
   void setCustomHeaders(List<String> headers) {
-    emit(state.copyWith(customHeaders: headers));
+    emit(state.copyWith(customHeaders: headers, plutoColumns: [], plutoRows: []));
   }
 
   /// Toggles the selection of a column.
@@ -164,12 +231,12 @@ class FileUploadCubit extends Cubit<FileUploadState> {
       newSelectedColumns.add(columnName);
     }
 
-    emit(state.copyWith(selectedColumns: newSelectedColumns));
+    emit(state.copyWith(selectedColumns: newSelectedColumns, plutoColumns: [], plutoRows: []));
   }
 
   /// Clears all selected columns.
   void clearSelectedColumns() {
-    emit(state.copyWith(selectedColumns: []));
+    emit(state.copyWith(selectedColumns: [], plutoColumns: [], plutoRows: []));
   }
 
   /// Adds a custom item to the selected items list.
@@ -177,25 +244,15 @@ class FileUploadCubit extends Cubit<FileUploadState> {
     if (!state.selectedItems.any((selectedItem) => selectedItem.data == item.data)) {
       final newAvailable = List<CustomDragTargetDetails>.from(state.availableItems)..remove(item);
       final newSelected = List<CustomDragTargetDetails>.from(state.selectedItems)..add(item);
-      emit(state.copyWith(availableItems: newAvailable, selectedItems: newSelected));
+      emit(state.copyWith(availableItems: newAvailable, selectedItems: newSelected, plutoColumns: [], plutoRows: []));
     }
   }
 
   // ==================== Grid-related Methods ====================
 
-  /// Generates the headers for the OnixGrid from the state's headers.
-  List<OnixGridHeaderCell> generateMainTableHeaders() {
-    List<String> effectiveHeaders = state.customHeaders.isNotEmpty ? state.customHeaders : state.headers;
-
-    return effectiveHeaders
-        .where((header) => header.trim().isNotEmpty)
-        .map((header) {
-      return OnixGridHeaderCell(
-        headerCellField: header,
-        title: header,
-        cellType: const OnixTextCell(readOnly: false),
-      );
-    }).toList();
+  /// Generates the headers for the grid from the state's headers.
+  List<String> generateMainTableHeaders() {
+    return state.customHeaders.isNotEmpty ? state.customHeaders : state.headers;
   }
 
   /// Checks if the second row of the table has any empty cells.

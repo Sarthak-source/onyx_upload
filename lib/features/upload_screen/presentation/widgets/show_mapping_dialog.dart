@@ -1,72 +1,54 @@
-import 'package:flutter/material.dart';
-import 'package:onyx_upload/core/style/app_text_styles.dart';
-import 'package:onyx_upload/core/style/app_colors.dart';
-import 'package:onyx_upload/features/upload_screen/presentation/widgets/create_template_final_dialog.dart';
+import 'dart:developer';
 
-class CreateTemplateDialog extends StatefulWidget {
-  const CreateTemplateDialog({super.key});
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:onyx_upload/core/extensions/widgets/dropdowns/Customr_dopdown_with_search.dart';
+import 'package:onyx_upload/core/style/app_colors.dart';
+import 'package:onyx_upload/core/style/app_text_styles.dart';
+import 'package:pluto_grid/pluto_grid.dart';
+
+import '../controller/upload_screen_cubit.dart';
+
+class CreateTemplateFinalDialog extends StatefulWidget {
+  final List<String> selectedColumns;
+  
+  const CreateTemplateFinalDialog({super.key, required this.selectedColumns});
 
   @override
-  State<CreateTemplateDialog> createState() => _CreateTemplateDialogState();
+  State<CreateTemplateFinalDialog> createState() => _CreateTemplateFinalDialogState();
 }
 
-class _CreateTemplateDialogState extends State<CreateTemplateDialog> {
-  // القوائم المتاحة والمختارة
-  List<String> availableItems = [
-     "مبلغ الفاتورة",
-  "الوحدة المالية",
-  "مجموعات العروض الترويجية",
-  "طريقة الدفع",
-  "المخزن",
-  "مجموعات المخازن",
-  "رقم المنطقة للمخزن",
-  "نوع العميل",
-  "مجموعة العميل",
-  "درجة العميل",
-  "نشاط العميل",
-  "تصنيف العميل",
-  "رقم العميل",
-  "عملاء نقاطي",
+class _CreateTemplateFinalDialogState extends State<CreateTemplateFinalDialog> {
+  List<String> _selectedColumns = [];
+  List<String> _availableColumns = [
+    "مبلغ الفاتورة",
+    "الوحدة المالية",
+    "مجموعات العروض الترويجية",
+    "طريقة الدفع",
+    "المخزن",
+    "مجموعات المخازن",
+    "رقم المنطقة للمخزن",
+    "نوع العميل",
+    "مجموعة العميل",
+    "درجة العميل",
+    "نشاط العميل",
+    "تصنيف العميل",
+    "رقم العميل",
+    "عملاء نقاطي",
   ];
+  bool _showGrid = false;
+  bool _showColumnSelector = false;
+  List<PlutoColumn> _gridColumns = [];
+  List<PlutoRow> _gridRows = [];
 
-  List<String> selectedItems = [];
-
-  void _addItem(String item) {
-    setState(() {
-      if (!selectedItems.contains(item)) {
-        selectedItems.add(item);
-        availableItems.remove(item);
-      }
-    });
-  }
-
-  void _removeItem(String item) {
-    setState(() {
-      selectedItems.remove(item);
-      if (!availableItems.contains(item)) {
-        availableItems.add(item);
-        availableItems.sort();
-      }
-    });
-  }
-
-  void _removeAllItems() {
-    setState(() {
-      for (var item in selectedItems) {
-        if (!availableItems.contains(item)) {
-          availableItems.add(item);
-        }
-      }
-      selectedItems.clear();
-      availableItems.sort();
-    });
-  }
-
-  void _addAllItems() {
-    setState(() {
-      selectedItems.addAll(availableItems);
-      availableItems.clear();
-    });
+  @override
+  void initState() {
+    super.initState();
+    // تهيئة الأعمدة المحددة من الـ widget
+    _selectedColumns = List.from(widget.selectedColumns);
+    
+    // إزالة الأعمدة المحددة من المتاحة
+    _availableColumns.removeWhere((item) => _selectedColumns.contains(item));
   }
 
   @override
@@ -74,137 +56,290 @@ class _CreateTemplateDialogState extends State<CreateTemplateDialog> {
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Dialog(
-        backgroundColor: const Color(0xffF9F9F9),
+        backgroundColor: const Color(0xFFF9F9F9),
         insetPadding: const EdgeInsets.all(16),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
         ),
         child: SizedBox(
-          width: 850,
+          width: 700,
           height: 550,
           child: Column(
             children: [
               // ====== العنوان العلوي للديالوج ======
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                decoration: const BoxDecoration(
-                  color: Color(0xffF9F9F9),
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                decoration: BoxDecoration(
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+                  border: Border(bottom: BorderSide(color: Colors.grey.shade300, width: 0.5)),
                 ),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
+                    children: [ 
                       Text(
-                        "إنشاء قالب جديد",
+                        _showColumnSelector ? "اختيار الأعمدة" : "إنشاء قالب جديد",
                         style: AppTextStyles.styleRegular14(context, color: Colors.black87),
                       ),
                       InkWell(
-                            hoverColor: Colors.transparent,
-                            splashColor: Colors.transparent,
-                            highlightColor: Colors.transparent,
-                            onTap: () => Navigator.pop(context),
-                            child: Container(
-                              padding: const EdgeInsets.all(10),
-                              decoration: const BoxDecoration(
-                                color: kGrayIX,
-                                shape: BoxShape.circle,
-                              ),
-                              child: const Icon(
-                                Icons.close,
-                                color: kTextFiledColor,
-                                size: 12,
-                              ),
-                            ),
+                        hoverColor: Colors.transparent,
+                        splashColor: Colors.transparent,
+                        highlightColor: Colors.transparent,
+                        onTap: () => Navigator.pop(context),
+                        child: Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: const BoxDecoration(
+                            color: kGrayIX,
+                            shape: BoxShape.circle,
                           ),
+                          child: const Icon(
+                            Icons.close,
+                            color: kTextFiledColor,
+                            size: 12,
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                 ),
               ),
-              
 
-              // ====== المحتوى الرئيسي (البيانات المتاحة والمختارة) ======
-              Expanded(
-                child: Row(
-                  children: [
-                    // القسم الأيمن - البيانات المتاحة
-                    Expanded(
-                      child: _buildSection(
-                        title: "البيانات المتاحة",
-                        actionText: "إضافة الكل",
-                        actionColor: const Color(0xff0C69C0),
-                        items: availableItems,
-                        isRight: true,
-                        onItemTap: _addItem,
-                        onActionTap: _addAllItems,
-                      ),
-                    ),
+              // ====== محتوى متغير بناءً على حالة العرض ======
+              if (_showColumnSelector)
+                _buildColumnSelector()
+              else
+                _buildMainContent(),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 
-                    // القسم الأيسر - البيانات المختارة
-                    Expanded(
-                      child: _buildSection(
-                        title: "البيانات المختارة",
-                        actionText: "حذف الكل",
-                        actionColor: const Color(0xff0C69C0),
-                        items: selectedItems,
-                        isRight: false,
-                        onItemTap: _removeItem,
-                        onActionTap: _removeAllItems,
-                      ),
-                    ),
-                  ],
-                ),
+  // ====== بناء واجهة اختيار الأعمدة ======
+  Widget _buildColumnSelector() {
+    return Expanded(
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            // تعليمات
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.grey.shade300),
               ),
-
-              // ====== الأزرار السفلية ======
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  border: Border(top: BorderSide(color: Colors.grey.shade300)),
-                  color: const Color(0xffF9F9F9),
-                  borderRadius: const BorderRadius.vertical(bottom: Radius.circular(12)),
+              child: Row(
+                children: [
+                  const Icon(Icons.info_outline, color: Colors.blue, size: 20),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'اسحب الأعمدة من القائمة المتاحة إلى القائمة المحددة',
+                      style: AppTextStyles.styleRegular14(context, color: Colors.grey.shade700),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+            
+            // منطقة السحب والإفلات
+            Expanded(
+              child: Row(
+                children: [
+                  // الأعمدة المتاحة
+                  _buildColumnList(
+                    title: 'الأعمدة المتاحة',
+                    items: _availableColumns,
+                    isSource: true,
+                    color: kSkyDarkColor,
+                  ),
+                  
+                  const SizedBox(width: 16),
+                  
+                  // الأعمدة المحددة
+                  _buildColumnList(
+                    title: 'الأعمدة المحددة',
+                    items: _selectedColumns,
+                    isSource: false,
+                    color: kCardGreenColor,
+                  ),
+                ],
+              ),
+            ),
+            
+            const SizedBox(height: 16),
+            
+            // أزرار التحكم
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                TextButton(
+                  onPressed: () {
+                    setState(() {
+                      _showColumnSelector = false;
+                    });
+                  },
+                  child: Text('إلغاء', style: AppTextStyles.styleRegular14(context)),
                 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    ElevatedButton.icon(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xff0C69C0),
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(6),
+                const SizedBox(width: 8),
+                ElevatedButton(
+                  onPressed: () {
+                    setState(() {
+                      _showColumnSelector = false;
+                    });
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: kCardGreenColor,
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+                  ),
+                  child: Text('تم', style: AppTextStyles.styleLight14(context, color: Colors.white)),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ====== بناء قائمة الأعمدة قابلة للسحب ======
+  Widget _buildColumnList({
+    required String title,
+    required List<String> items,
+    required bool isSource,
+    required Color color,
+  }) {
+    return Expanded(
+      child: DragTarget<String>(
+        onWillAccept: (data) => true,
+        onAccept: (data) {
+          _handleColumnDrop(data, isSource);
+        },
+        builder: (context, candidateData, rejectedData) {
+          return Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.grey.shade300),
+            ),
+            child: Column(
+              children: [
+                // عنوان القائمة
+                Container(
+                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                  decoration: BoxDecoration(
+                    color: color,
+                    borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        title,
+                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          items.length.toString(),
+                          style: const TextStyle(color: Colors.white, fontSize: 12),
                         ),
                       ),
-                      onPressed: () {
-                        Navigator.of(context).pop(); // إغلاق الديالوج الحالي
-                        showDialog(
-                          context: context,
-                          builder: (context) => const CreateTemplateFinalDialog(),);
-                      },
-                      icon: const Icon(Icons.check, color: Colors.white, size: 20),
-                      label: Text(
-                        "تنفيذ",
-                        style: AppTextStyles.styleLight12(context, color: Colors.white, fontSize: 15),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    ElevatedButton.icon(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xff819AA7),
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(6),
+                    ],
+                  ),
+                ),
+                
+                // قائمة العناصر
+                Expanded(
+                  child: items.isEmpty
+                      ? Center(
+                          child: Text(
+                            isSource ? 'اسحب من هنا' : 'اسحب الأعمدة هنا',
+                            style: TextStyle(color: Colors.grey.shade500),
+                          ),
+                        )
+                      : ListView.builder(
+                          padding: const EdgeInsets.all(8),
+                          itemCount: items.length,
+                          itemBuilder: (context, index) {
+                            return _buildDraggableColumn(items[index], isSource);
+                          },
                         ),
-                      ),
-                      onPressed: () => Navigator.pop(context),
-                      icon: const Icon(Icons.close, color: Colors.white, size: 20),
-                      label: Text(
-                        "إلغاء",
-                        style: AppTextStyles.styleLight12(context, color: Colors.white, fontSize: 15),
-                      ),
-                    ),
-                  ],
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  // ====== بناء عنصر عمود قابل للسحب ======
+  Widget _buildDraggableColumn(String columnName, bool isSource) {
+    return Draggable<String>(
+      data: columnName,
+      feedback: Material(
+        elevation: 4,
+        borderRadius: BorderRadius.circular(6),
+        child: Container(
+          width: 150,
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          decoration: BoxDecoration(
+            color: isSource ? kSkyDarkColor : kCardGreenColor,
+            borderRadius: BorderRadius.circular(6),
+          ),
+          child: Text(
+            columnName,
+            style: const TextStyle(color: Colors.white, fontSize: 12),
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ),
+      childWhenDragging: Container(
+        margin: const EdgeInsets.symmetric(vertical: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        decoration: BoxDecoration(
+          color: Colors.grey.shade200,
+          borderRadius: BorderRadius.circular(6),
+        ),
+        child: Text(columnName, style: TextStyle(color: Colors.grey.shade500)),
+      ),
+      child: GestureDetector(
+        onTap: () {
+          // عند النقر على الخلية، نقل العنصر تلقائياً
+          _handleColumnTap(columnName, isSource);
+        },
+        child: Container(
+          margin: const EdgeInsets.symmetric(vertical: 4),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          decoration: BoxDecoration(
+            color: isSource ? kSkyDarkColor.withOpacity(0.1) : kCardGreenColor.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(6),
+            border: Border.all(
+              color: isSource ? kSkyDarkColor : kCardGreenColor,
+              width: 1,
+            ),
+          ),
+          child: Row(
+            children: [
+              const Icon(Icons.drag_handle, size: 16, color: Colors.grey),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  columnName,
+                  style: TextStyle(
+                    color: isSource ? kSkyDarkColor : kCardGreenColor,
+                    fontSize: 12,
+                  ),
                 ),
               ),
             ],
@@ -214,114 +349,223 @@ class _CreateTemplateDialogState extends State<CreateTemplateDialog> {
     );
   }
 
-  // ====== ويدجت عامة للأقسام (البيانات المتاحة والمختارة) ======
-  Widget _buildSection({
-  required String title,
-  required String actionText,
-  required Color actionColor,
-  required List<String> items,
-  required bool isRight,
-  required Function(String) onItemTap,
-  required VoidCallback onActionTap,
-}) {
-  return Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      // ===== العنوان وزر الأكشن فوق =====
-      Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              title,
-              style: AppTextStyles.styleLight12(context,
-                  color: Colors.black, fontSize: 15),
+  // ====== معالجة النقر على الخلية ======
+  void _handleColumnTap(String columnName, bool isSource) {
+    setState(() {
+      if (isSource) {
+        // النقر على عنصر في القائمة المتاحة (نقله إلى المحددة)
+        if (!_selectedColumns.contains(columnName)) {
+          _selectedColumns.add(columnName);
+        }
+        _availableColumns.remove(columnName);
+      } else {
+        // النقر على عنصر في القائمة المحددة (نقله إلى المتاحة)
+        if (!_availableColumns.contains(columnName)) {
+          _availableColumns.add(columnName);
+        }
+        _selectedColumns.remove(columnName);
+      }
+      
+      // ترتيب القوائم
+      _availableColumns.sort();
+      _selectedColumns.sort();
+    });
+  }
+
+  // ====== معالجة سحب وإفلات الأعمدة ======
+  void _handleColumnDrop(String columnName, bool isSource) {
+    setState(() {
+      if (isSource) {
+        // إفلات في القائمة المتاحة (المصدر)
+        if (!_availableColumns.contains(columnName)) {
+          _availableColumns.add(columnName);
+        }
+        _selectedColumns.remove(columnName);
+      } else {
+        // إفلات في القائمة المحددة (الهدف)
+        if (!_selectedColumns.contains(columnName)) {
+          _selectedColumns.add(columnName);
+        }
+        _availableColumns.remove(columnName);
+      }
+      
+      // ترتيب القوائم
+      _availableColumns.sort();
+      _selectedColumns.sort();
+    });
+  }
+
+  // ====== بناء المحتوى الرئيسي ======
+  Widget _buildMainContent() {
+    return Expanded(
+      child: Column(
+        children: [
+          // ====== حقل اسم القالب ======
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                  child: CustomDropDownWithSearch(
+                    fldNm: "templateDropdown",
+                    hint: "اختر القالب",
+                    list: const ["قالب 1", "قالب 2"],
+                    isRequired: true,
+                    onChanged: (value) {
+                      log("تم اختيار القالب: $value");
+                    },
+                  ),
+                )
+              ],
             ),
-            GestureDetector(
-              onTap: onActionTap,
-              child: Text(
-                actionText,
-                style: AppTextStyles.styleLight12(context,
-                    color: actionColor, fontSize: 15),
+          ),
+
+          // ====== منطقة عرض الجدول ======
+          if (_showGrid && _gridColumns.isNotEmpty)
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                child: Container(
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.grey.shade300),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: PlutoGrid(
+                    columns: _gridColumns,
+                    rows: _gridRows,
+                    onLoaded: (PlutoGridOnLoadedEvent event) {},
+                    configuration: PlutoGridConfiguration(
+                      columnSize: const PlutoGridColumnSizeConfig(
+                        autoSizeMode: PlutoAutoSizeMode.equal,
+                      ),
+                      style: PlutoGridStyleConfig(
+                        cellTextStyle: AppTextStyles.styleRegular14(context, color: kTextColor),
+                        columnTextStyle: AppTextStyles.styleRegular14(context, color: kTextColor),
+                        gridBackgroundColor: Colors.transparent,
+                        cellColorInEditState: Colors.transparent,
+                        activatedColor: Colors.transparent,
+                        activatedBorderColor: kSkyDarkColor,
+                        inactivatedBorderColor: Colors.grey.shade300,
+                        gridBorderColor: Colors.grey.shade300,
+                        columnHeight: 40,
+                        rowHeight: 40,
+                        columnFilterHeight: 40,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            )
+          else
+            const Expanded(
+              child: Center(
+                child: Text(
+                  'سيظهر الجدول هنا بعد الضغط على تنفيذ',
+                  style: TextStyle(color: Colors.grey),
+                ),
               ),
             ),
-          ],
-        ),
-      ),
 
-      // ===== الكونتينر فيه العناصر فقط =====
-      Expanded(
-        child: Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: Colors.grey.shade300, width: 1),
-          ),
-          margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-          child: ListView.builder(
-            padding: const EdgeInsets.symmetric(horizontal: 22.0),
-            itemCount: items.length,
-            itemBuilder: (_, index) {
-              return Container(
-                margin: const EdgeInsets.symmetric(vertical: 8),
-                child: isRight
-                    ? Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Text("${index + 1}",
-                                  style: AppTextStyles.styleLight12(context,
-                                      color: Colors.black, fontSize: 15)),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: Text(items[index],
-                                    style: AppTextStyles.styleLight12(context,
-                                        color: Colors.black, fontSize: 15)),
-                              ),
-                              GestureDetector(
-                                onTap: () => onItemTap(items[index]),
-                                child: const Icon(Icons.add,
-                                    color: Color(0xff474747), size: 24),
-                              ),
-                            ],
-                          ),
-                          const Divider(color: Color(0xffE9E9E9)),
-                        ],
-                      )
-                    : Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          Row(
-                            children: [
-                              Text("${index + 1}",
-                                  style: AppTextStyles.styleLight12(context,
-                                      color: Colors.black, fontSize: 15)),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: Text(items[index],
-                                    style: AppTextStyles.styleLight12(context,
-                                        color: Colors.black, fontSize: 15)),
-                              ),
-                              const SizedBox(width: 8),
-                              GestureDetector(
-                                onTap: () => onItemTap(items[index]),
-                                child: const Icon(Icons.delete,
-                                    color: Color(0xff474747), size: 24),
-                              ),
-                            ],
-                          ),
-                          const Divider(color: Colors.grey),
-                        ],
+          // ====== الأزرار السفلية ======
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: kSkyDarkColor,
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      _showColumnSelector = true;
+                    });
+                  },
+                  icon: const Icon(Icons.view_column, color: Colors.white, size: 20),
+                  label: Text(
+                    "اختيار الأعمدة",
+                    style: AppTextStyles.styleLight12(context, color: Colors.white, fontSize: 15),
+                  ),
+                ),
+                Row(
+                  children: [
+                    ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: kCardGreenColor,
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(6),
+                        ),
                       ),
-              );
-            },
+                      onPressed: () {
+                        context.read<FileUploadCubit>().pickAndProcessExcelFile();
+                      },
+                      icon: const Icon(Icons.file_upload, color: Colors.white, size: 20),
+                      label: Text(
+                        "استيراد الملف",
+                        style: AppTextStyles.styleLight12(context, color: Colors.white, fontSize: 15),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue,
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                      ),
+                      onPressed: _selectedColumns.isNotEmpty ? () {
+                        _buildGrid();
+                      } : null,
+                      icon: const Icon(Icons.play_arrow, color: Colors.white, size: 20),
+                      label: Text(
+                        "تنفيذ",
+                        style: AppTextStyles.styleLight12(context, color: Colors.white, fontSize: 15),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
-        ),
+        ],
       ),
-    ],
-  );
-}
+    );
+  }
 
+  // ====== بناء الجدول بناءً على الأعمدة المحددة ======
+  void _buildGrid() {
+    setState(() {
+      _showGrid = false;
+    });
+
+    _gridColumns = List.generate(_selectedColumns.length, (i) {
+      return PlutoColumn(
+        title: _selectedColumns[i],
+        field: _toFieldName(_selectedColumns[i], i),
+        type: PlutoColumnType.text(),
+        enableSorting: true,
+        readOnly: true,
+      );
+    });
+
+    _gridRows = [];
+
+    setState(() {
+      _showGrid = true;
+    });
+  }
+
+  // ====== تحويل اسم العمود إلى اسم حقل آمن ======
+  String _toFieldName(String title, int index) {
+    final safe = title.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]+'), '_');
+    return 'c${index}_$safe';
+  }
 }
