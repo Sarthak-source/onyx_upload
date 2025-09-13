@@ -14,8 +14,8 @@ class FileUploadScreen extends StatelessWidget {
     return Scaffold(
       body: BlocConsumer<FileUploadCubit, FileUploadState>(
         listener: (context, state) {
-          if (state.tableData.isNotEmpty) {
-            Utils.customUploadDialog(context, widget: TableReview());
+          if (state.tableData.isNotEmpty && state.showTable) {
+            Utils.customUploadDialog(context, widget: const UploadedDialogBody());
           }
         },
         builder: (context, state) {
@@ -27,15 +27,14 @@ class FileUploadScreen extends StatelessWidget {
                 child: ElevatedButton(
                   onPressed: () => Utils.customUploadDialog(
                     context,
-                    widget: state.tableData.isEmpty
+                    widget: state.tableData.isEmpty || !state.showTable
                         ? const UploadDialogBody()
-                        : TableReview(),
+                        : const UploadedDialogBody(),
                   ),
                   child: const Text("Upload File"),
                 ),
               ),
               if (state.isLoading) const CircularProgressIndicator(),
-              // Expanded(child: const ExcelGridViewer()),
             ],
           );
         },

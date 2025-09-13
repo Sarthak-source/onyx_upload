@@ -1,83 +1,86 @@
+import 'package:pluto_grid/pluto_grid.dart';
 import 'package:onyx_upload/core/extensions/widgets/models/drag_model.dart';
-import 'package:pluto_grid/src/model/pluto_column.dart';
-import 'package:pluto_grid/src/model/pluto_row.dart';
 
 class FileUploadState {
-  final List<List<dynamic>> tableData;
   final List<String> headers;
+  final List<List<dynamic>> tableData;
   final bool isLoading;
-  final String? errorMessage;
-  final bool showMessage;
   final bool showTable;
+  final bool showMessage;
+  final String? errorMessage;
   final String? customTextFildTable;
   final String? customDropdownTable;
   final bool checkbox;
   final List<String> customHeaders;
-  final bool hasEmptyCells;
-  final bool showMissingData;
-  // final int selectedRowIndex;
   final List<String> selectedColumns;
-  final List<CustomDragTargetDetails> selectedItems;
   final List<CustomDragTargetDetails> availableItems;
+  final List<CustomDragTargetDetails> selectedItems;
+  final List<PlutoColumn> plutoColumns;
+  final List<PlutoRow> plutoRows;
+  final bool ignoreHeaderErrors;
+  final String? selectedTemplate;
+  final bool hasDataError;
 
-
-  // Default constructor
-  const FileUploadState({
-    this.tableData = const [],
+  FileUploadState({
     this.headers = const [],
+    this.tableData = const [],
     this.isLoading = false,
-    this.showMessage = false,
     this.showTable = false,
+    this.showMessage = false,
     this.errorMessage,
     this.customTextFildTable,
     this.customDropdownTable,
     this.checkbox = false,
     this.customHeaders = const [],
-    this.hasEmptyCells = false,
-    this.showMissingData = false,
-    //  this.selectedRowIndex = 0,
-     this.selectedColumns = const [],
-     required this.selectedItems,
-      this.availableItems = const [],
+    this.selectedColumns = const [],
+    this.availableItems = const [],
+    this.selectedItems = const [],
+    this.plutoColumns = const [],
+    this.plutoRows = const [],
+    this.ignoreHeaderErrors = false,
+    this.selectedTemplate,
+    this.hasDataError = false,
   });
 
-  get isNotEmpty => null;
-
-  // `copyWith` method for updating parts of the state
   FileUploadState copyWith({
-    List<List<dynamic>>? tableData,
     List<String>? headers,
+    List<List<dynamic>>? tableData,
     bool? isLoading,
-    bool? showMessage,
     bool? showTable,
+    bool? showMessage,
     String? errorMessage,
     String? customTextFildTable,
     String? customDropdownTable,
     bool? checkbox,
     List<String>? customHeaders,
-    bool? showMissingData,
-    // int? selectedRowIndex,
     List<String>? selectedColumns,
+    List<CustomDragTargetDetails>? availableItems,
     List<CustomDragTargetDetails>? selectedItems,
-    List<CustomDragTargetDetails>? availableItems, required List<PlutoColumn> plutoColumns, required List<PlutoRow> plutoRows,
-
+    List<PlutoColumn>? plutoColumns,
+    List<PlutoRow>? plutoRows,
+    bool? ignoreHeaderErrors,
+    String? selectedTemplate,
+    bool? hasDataError,
   }) {
     return FileUploadState(
-        tableData: tableData ?? this.tableData,
-        headers: headers ?? this.headers,
-        isLoading: isLoading ?? this.isLoading,
-        showMessage: showMessage ?? this.showMessage,
-        showTable: showTable ?? this.showTable,
-        errorMessage: errorMessage ?? this.errorMessage,
-        customTextFildTable: customTextFildTable ?? this.customTextFildTable,
-        customDropdownTable: customDropdownTable ?? this.customDropdownTable,
-        checkbox: checkbox ?? this.checkbox,customHeaders: customHeaders ?? this.customHeaders, showMissingData: showMissingData ?? this.showMissingData,
-        //  selectedRowIndex: selectedRowIndex ?? this.selectedRowIndex,
-         selectedColumns: selectedColumns ?? this.selectedColumns,
-         selectedItems: selectedItems ?? this.selectedItems,
-         availableItems: availableItems ?? this.availableItems,
-         );
-        
-        
+      headers: headers ?? this.headers,
+      tableData: tableData ?? this.tableData,
+      isLoading: isLoading ?? this.isLoading,
+      showTable: showTable ?? this.showTable,
+      showMessage: showMessage ?? this.showMessage,
+      errorMessage: errorMessage ?? this.errorMessage,
+      customTextFildTable: customTextFildTable ?? this.customTextFildTable,
+      customDropdownTable: customDropdownTable ?? this.customDropdownTable,
+      checkbox: checkbox ?? this.checkbox,
+      customHeaders: customHeaders ?? this.customHeaders,
+      selectedColumns: selectedColumns ?? this.selectedColumns,
+      availableItems: availableItems ?? this.availableItems,
+      selectedItems: selectedItems ?? this.selectedItems,
+      plutoColumns: plutoColumns ?? this.plutoColumns,
+      plutoRows: plutoRows ?? this.plutoRows,
+      ignoreHeaderErrors: ignoreHeaderErrors ?? this.ignoreHeaderErrors,
+      selectedTemplate: selectedTemplate ?? this.selectedTemplate,
+      hasDataError: hasDataError ?? this.hasDataError,
+    );
   }
 }

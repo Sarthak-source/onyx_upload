@@ -7,7 +7,6 @@ import 'package:onyx_upload/core/extensions/widgets/dropdowns/Customr_dopdown_wi
 import 'package:onyx_upload/core/style/app_colors.dart';
 import 'package:onyx_upload/core/style/app_text_styles.dart';
 import 'package:onyx_upload/features/upload_screen/presentation/widgets/show_mapping_dialog.dart';
-import 'package:onyx_upload/features/upload_screen/presentation/widgets/title_dialog_page.dart';
 import 'package:onyx_upload/features/upload_screen/presentation/controller/upload_screen_cubit.dart';
 import 'package:onyx_upload/features/upload_screen/presentation/controller/upload_screen_state.dart';
 
@@ -19,11 +18,10 @@ class UploadDialogBody extends StatelessWidget {
     return BlocBuilder<FileUploadCubit, FileUploadState>(
       builder: (context, state) {
         return Directionality(
-          textDirection: TextDirection.rtl, // عكس اتجاه الواجهة
+          textDirection: TextDirection.rtl, 
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // العنوان العلوي مع زر "إنشاء قالب جديد"
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                 child: Row(
@@ -104,7 +102,6 @@ class UploadDialogBody extends StatelessWidget {
                 ),
                 child: Column(
                   children: [
-                    // الأيقونة والنص
                     Icon(Icons.cloud, size: 50, color: azureColor),
                     const SizedBox(height: 8),
                     Text(
@@ -129,7 +126,6 @@ class UploadDialogBody extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 16),
-              // منطقة القوالب (التصميم الجديد)
               Align(
                 alignment: Alignment.centerRight,
                 child: Text(
