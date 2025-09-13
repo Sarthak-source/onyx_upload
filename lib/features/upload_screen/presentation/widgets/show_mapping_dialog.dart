@@ -1,7 +1,7 @@
 import 'dart:developer';
-import 'dart:typed_data';
+import 'dart:typed_data'; // Import for Uint8List
+
 import 'package:file_picker/file_picker.dart';
-import 'package:file_saver/file_saver.dart'; // Add this import
 import 'package:flutter/material.dart';
 import 'package:onyx_upload/core/extensions/widgets/dropdowns/Customr_dopdown_with_search.dart';
 import 'package:onyx_upload/core/style/app_colors.dart';
@@ -12,14 +12,17 @@ import 'package:excel/excel.dart' hide Border;
 
 class CreateTemplateFinalDialog extends StatefulWidget {
   final List<String> selectedColumns;
+
   const CreateTemplateFinalDialog({super.key, required this.selectedColumns});
+
   @override
   State<CreateTemplateFinalDialog> createState() => _CreateTemplateFinalDialogState();
 }
 
 class _CreateTemplateFinalDialogState extends State<CreateTemplateFinalDialog> {
   List<String> _selectedColumns = [];
-  final List<String> _availableColumns = [
+  // ignore: prefer_final_fields
+  List<String> _availableColumns = [
     "مبلغ الفاتورة",
     "الوحدة المالية",
     "مجموعات العروض الترويجية",
@@ -515,22 +518,6 @@ class _CreateTemplateFinalDialogState extends State<CreateTemplateFinalDialog> {
                   style: AppTextStyles.styleLight12(context, color: Colors.white, fontSize: 15),
                 ),
               ),
-              const SizedBox(width: 10),
-              ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.indigo,
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                ),
-                onPressed: _gridRows.isNotEmpty ? _saveDataToExcel : null,
-                icon: const Icon(Icons.save, color: Colors.white, size: 20),
-                label: Text(
-                  "حفظ",
-                  style: AppTextStyles.styleLight12(context, color: Colors.white, fontSize: 15),
-                ),
-              ),
             ],
           ),
         ],
@@ -662,57 +649,6 @@ class _CreateTemplateFinalDialogState extends State<CreateTemplateFinalDialog> {
         _errorMessage = friendlyMessage;
         _isProcessingFile = false;
         _showGrid = false;
-      });
-    }
-  }
-
-  Future<void> _saveDataToExcel() async {
-    if (_gridRows.isEmpty) {
-      setState(() {
-        _errorMessage = "الجدول فارغ، لا توجد بيانات للحفظ.";
-      });
-      return;
-    }
-
-    try {
-      final excel = Excel.createExcel();
-      final sheet = excel['Sheet1'];
-
-      // Write headers
-      for (var i = 0; i < _gridColumns.length; i++) {
-        sheet.cell(CellIndex.indexByColumnRow(columnIndex: i, rowIndex: 0))
-          .value = _gridColumns[i].title as CellValue?;
-      }
-
-      // Write data rows
-      for (var i = 0; i < _gridRows.length; i++) {
-        final row = _gridRows[i];
-        for (var j = 0; j < _gridColumns.length; j++) {
-          final cellValue = row.cells[_gridColumns[j].field]?.value.toString() ?? '';
-          sheet.cell(CellIndex.indexByColumnRow(columnIndex: j, rowIndex: i + 1))
-            .value = cellValue as CellValue?;
-        }
-      }
-
-      final Uint8List excelBytes = Uint8List.fromList(excel.encode()!);
-      final String fileName = "بيانات_محفوظة_${DateTime.now().toIso8601String()}.xlsx";
-
-      await FileSaver.instance.saveFile(
-        name: fileName,
-        bytes: excelBytes,
-        ext: 'xlsx',
-        mimeType: MimeType.microsoftExcel,
-      );
-
-      // Show a success message
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('تم حفظ الملف بنجاح!')),
-      );
-
-    } catch (e) {
-      log("حدث خطأ في الحفظ: $e");
-      setState(() {
-        _errorMessage = "حدث خطأ أثناء حفظ الملف. يرجى المحاولة مرة أخرى.";
       });
     }
   }
